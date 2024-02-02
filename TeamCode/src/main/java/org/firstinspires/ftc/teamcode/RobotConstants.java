@@ -13,10 +13,10 @@ public class RobotConstants {
     public static double shoulder_kP = 0.008;
     public static double shoulder_kI = 0;
     public static double shoulder_kD = 0;
-    public static double shoulder_kG = 0.025;
+    public static double shoulder_kG = -0.1;
     public static int shoulder_maxVel = 500000;
-    public static int shoulder_maxAccel = 6000;
-    public static int shoulder_maxJerk = 30000;
+    public static int shoulder_maxAccel = 4000;
+    public static int shoulder_maxJerk = 20000;
     public static int shoulder_dropOffPos = -2000;
 
     //arm constants
@@ -32,10 +32,10 @@ public class RobotConstants {
     public static int arm_minPos = -600;
 
     //Jullians claw constants
-    public static double julliansClawOpenBottom = 0.5;
-    public static double julliansClawCloseBottom = 0.5;
-    public static double julliansClawOpenTop = 0.5;
-    public static double julliansClawCloseTop = 0.5;
+    public static double julliansClawOpenBottom = 0.4;
+    public static double julliansClawCloseBottom = 0.63;
+    public static double julliansClawOpenTop = 0.38;
+    public static double julliansClawCloseTop = 0.6;
 
 
 

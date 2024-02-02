@@ -7,10 +7,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.ArmV2;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSystemV2;
 import org.firstinspires.ftc.teamcode.subsystems.JulliansClaw;
+import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.Shoulder;
 import org.firstinspires.ftc.teamcode.subsystems.Wrist;
 import org.firstinspires.ftc.teamcode.util.Encoder;
@@ -30,11 +32,8 @@ public class TeleOppV1 extends LinearOpMode {
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
-        //AHRS navx = AHRS.getInstance(
-        //        hardwareMap.get(NavxMicroNavigationSensor.class, "navx"),
-        //        AHRS.DeviceDataType.kProcessedData);
+        NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
 
-        /*
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),
                 hardwareMap.get(DcMotorEx.class, "frontRight"),
@@ -43,19 +42,26 @@ public class TeleOppV1 extends LinearOpMode {
                 navx,
                 new Encoder(hardwareMap.get(DcMotorEx.class, "backLeft")),
                 new Encoder(hardwareMap.get(DcMotorEx.class, "backRight")));
-        */
-        //Lift lift = new Lift(
-        //        hardwareMap.get(DcMotorEx.class, "lift"));
+        Lift lift = new Lift(
+                hardwareMap.get(DcMotorEx.class, "lift"));
         Wrist wrist  = new Wrist(
                 hardwareMap.get(Servo.class, "left"),
                 hardwareMap.get(Servo.class, "right"));
         double wposition = 1.0;
 
-        //while (navx.isCalibrating()){
-        //    telemetry.addData("navx calibation...",navx.isCalibrating());
-        //    telemetry.update();
-        //}
+        ElapsedTime timer = new ElapsedTime();
+        // The gyro automatically starts calibrating. This takes a few seconds.
+        telemetry.log().add("Gyro Calibrating. Do Not Move!");
 
+        // Wait until the gyro calibration is complete
+        timer.reset();
+        while (navx.isCalibrating())  {
+            telemetry.addData("calibrating", "%s", Math.round(timer.seconds())%2==0 ? "|.." : "..|");
+            telemetry.update();
+            Thread.sleep(50);
+        }
+        telemetry.log().clear(); telemetry.log().add("Gyro Calibrated. Press Start.");
+        telemetry.clear(); telemetry.update();
 
         waitForStart();
 

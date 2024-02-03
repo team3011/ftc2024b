@@ -7,12 +7,11 @@ import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 
-public class ArmV2 {
+public class Telescope {
     private DcMotorEx motor;
     private PIDCoefficients coeffs;
     private PIDFController controller;
@@ -23,7 +22,7 @@ public class ArmV2 {
 
     private double power = 0;
 
-    public ArmV2(DcMotorEx m) {
+    public Telescope(DcMotorEx m) {
         this.motor = m;
         this.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

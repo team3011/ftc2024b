@@ -19,6 +19,8 @@ public class Telescope {
     private int lastTarget = 0;
     private MotionProfile profile;
     private ElapsedTime timer = new ElapsedTime();
+    private boolean manualMoving = false;
+
 
     private double power = 0;
 
@@ -47,7 +49,9 @@ public class Telescope {
 
     //input > 0 telescope goes down
     public void moveManual(double input){
+        this.manualMoving = true;
         this.motor.setPower(input);
+        setPosition(this.motor.getCurrentPosition());
     }
 
     //@param target - encoder counts 0 to negative numbers
@@ -72,13 +76,17 @@ public class Telescope {
     }
 
     public double update(){
-        MotionState state = this.profile.get(this.timer.seconds());
-        this.controller.setTargetPosition(state.getX());
-        this.controller.setTargetVelocity(state.getV());
-        this.controller.setTargetAcceleration(state.getA());
-        int motor_Pos = this.motor.getCurrentPosition();
-        double correction = controller.update(motor_Pos);
-        this.motor.setPower(correction);
+        double correction = 0;
+        if (!this.manualMoving) {
+            MotionState state = this.profile.get(this.timer.seconds());
+            this.controller.setTargetPosition(state.getX());
+            this.controller.setTargetVelocity(state.getV());
+            this.controller.setTargetAcceleration(state.getA());
+            int motor_Pos = this.motor.getCurrentPosition();
+            correction = controller.update(motor_Pos);
+            this.motor.setPower(correction);
+        }
+        this.manualMoving = false;
         return correction;
     }
 }

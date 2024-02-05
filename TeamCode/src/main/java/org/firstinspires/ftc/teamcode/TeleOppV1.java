@@ -72,7 +72,8 @@ public class TeleOppV1 extends LinearOpMode {
         boolean y_state = false;
         boolean shoulderWasMoving = false;
 
-        arm.tempWrist(RobotConstants.wrist_stowPos);
+
+
 
         while(opModeIsActive()){
             left_y = zeroAnalogInput(gamepad1.left_stick_y);
@@ -88,6 +89,7 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.a && a_state) {
                 a_state = false;
+                arm.moveToPickup();
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {
@@ -120,8 +122,8 @@ public class TeleOppV1 extends LinearOpMode {
             double correction = arm.updateEverything();
 
             //driveTrain.drive(left_x,left_y,0);
-            telemetry.addData("shoulder correction",correction);
-            telemetry.addData("shoulder encoder",arm.shouldEncoder());
+            telemetry.addData("tele correction",correction);
+            telemetry.addData("shoulder encoder",arm.shoulderEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
             telemetry.update();
         }

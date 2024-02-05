@@ -12,6 +12,8 @@ public class Arm {
     private JulliansClaw claw;
     private Lift lift;
     private Wrist wrist;
+    private int state = -1;
+
 
     public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw){
         this.shoulder = new Shoulder(sm, st);
@@ -22,38 +24,51 @@ public class Arm {
     }
 
     public void manualMove(double input){
-        double power = this.shoulder.moveManual(input);
-        this.telescope.moveManual(power/3.33);
+        //double power = this.shoulder.moveManual(input);
+        //this.telescope.moveManual(power/3.33);
+        this.telescope.moveManual(input);
     }
 
     public void tempWrist(double input){
         this.wrist.moveWrist(input);
     }
 
-    public void moveToStow(){
+    public void moveToStow() throws InterruptedException {
+        if (this.state == -1) {
+            this.claw.closeTop();
+            this.claw.closeBottom();
+            Thread.sleep(RobotConstants.claw_pickupPause);
+        }
         this.shoulder.setPosition(RobotConstants.shoulder_stowPos);
-        //this.telescope.setPosition(RobotConstants.telescope_stowPos);
+        this.telescope.setPosition(RobotConstants.telescope_stowPos);
+        this.wrist.setTarget(RobotConstants.wrist_stowPos,RobotConstants.wrist_stowTime);
         //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
     }
 
     public void moveToPickup(){
         this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
-        //this.telescope.setPosition(RobotConstants.telescope_stowPos);
-        //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
+        this.telescope.setPosition(RobotConstants.telescope_pickupPos);
+        this.wrist.setTarget(RobotConstants.wrist_pickupPos,RobotConstants.wrist_pickupTime);
+        this.claw.openBottom();
+        this.claw.openTop();
+        this.state = -1;
     }
 
     public void moveToDropOff(){
         this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
-        //this.telescope.setPosition(RobotConstants.telescope_stowPos);
-        //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
+        this.telescope.setPosition(RobotConstants.telescope_dropOffHigh);
+        this.wrist.setTarget(RobotConstants.wrist_dropOffPos,RobotConstants.wrist_dropOffTime);
+        this.state = 1;
     }
 
     public double updateEverything(){
-        return this.shoulder.update();
-        //this.telescope.update();
+
+        this.shoulder.update();
+        this.telescope.update();
+        return this.wrist.update();
     }
 
-    public int shouldEncoder(){
+    public int shoulderEncoder(){
         return this.shoulder.getEncoderValue();
     }
 

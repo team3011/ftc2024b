@@ -60,11 +60,8 @@ public class TeleOppV1 extends LinearOpMode {
         telemetry.clear(); telemetry.update();
 
         waitForStart();
-
-        //arm.setPosition(RobotConstants.arm_minPos);
         //driveTrain.resetEncoder();
 
-        // Scan servo till stop pressed.
         double left_y = gamepad1.left_stick_y;
         double right_y = gamepad1.right_stick_y;
         double left_x = gamepad1.left_stick_x;
@@ -73,6 +70,9 @@ public class TeleOppV1 extends LinearOpMode {
         boolean b_state = false;
         boolean x_state = false;
         boolean y_state = false;
+        boolean shoulderWasMoving = false;
+
+        arm.tempWrist(RobotConstants.wrist_stowPos);
 
         while(opModeIsActive()){
             left_y = zeroAnalogInput(gamepad1.left_stick_y);
@@ -90,11 +90,37 @@ public class TeleOppV1 extends LinearOpMode {
                 a_state = false;
                 //code here will fire when button released
             }
+            if (gamepad1.x && !x_state) {
+                x_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.x && x_state) {
+                x_state = false;
+                arm.moveToStow();
+                //code here will fire when button released
+            }
+            if (gamepad1.y && !y_state) {
+                y_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.y && y_state) {
+                y_state = false;
+                arm.moveToDropOff();
+                //code here will fire when button released
+            }
 
-            arm.manualMove(left_y);
-            //arm.updateEverything();
+            if (left_y != 0) {
+                shoulderWasMoving = true;
+                arm.manualMove(left_y);
+            } else if (shoulderWasMoving) {
+                shoulderWasMoving = false;
+                arm.manualMove(0);
+            }
+
+            double correction = arm.updateEverything();
 
             //driveTrain.drive(left_x,left_y,0);
+            telemetry.addData("shoulder correction",correction);
             telemetry.addData("shoulder encoder",arm.shouldEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
             telemetry.update();

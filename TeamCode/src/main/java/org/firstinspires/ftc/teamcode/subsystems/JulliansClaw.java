@@ -14,18 +14,18 @@ public class JulliansClaw {
     }
 
     public void openBottom(){
-        this.left.setPosition(RobotConstants.julliansClawOpenBottom);
+        this.left.setPosition(RobotConstants.claw_openBottom);
     }
 
     public void closeBottom(){
-        this.left.setPosition(RobotConstants.julliansClawCloseBottom);
+        this.left.setPosition(RobotConstants.claw_closeBottom);
     }
 
     public void openTop(){
-        this.right.setPosition(RobotConstants.julliansClawOpenTop);
+        this.right.setPosition(RobotConstants.claw_openTop);
     }
 
     public void closeTop(){
-        this.right.setPosition(RobotConstants.julliansClawCloseTop);
+        this.right.setPosition(RobotConstants.claw_closeTop);
     }
 }

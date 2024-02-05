@@ -27,16 +27,16 @@ public class Telescope {
         this.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        this.coeffs = new PIDCoefficients(RobotConstants.arm_kP,RobotConstants.arm_kI,RobotConstants.arm_kD);
-        this.controller = new PIDFController(this.coeffs,0,0,0,(x,y)->RobotConstants.arm_kG);
+        this.coeffs = new PIDCoefficients(RobotConstants.telescope_kP,RobotConstants.telescope_kI,RobotConstants.telescope_kD);
+        this.controller = new PIDFController(this.coeffs,0,0,0,(x,y)->RobotConstants.telescope_kG);
         this.controller.setOutputBounds(-1,1);
 
         this.profile = MotionProfileGenerator.generateSimpleMotionProfile(
                 new MotionState(0,0,0),
                 new MotionState(0,0,0),
-                RobotConstants.arm_maxVel,
-                RobotConstants.arm_maxAccel,
-                RobotConstants.arm_maxJerk
+                RobotConstants.telescope_maxVel,
+                RobotConstants.telescope_maxAccel,
+                RobotConstants.telescope_maxJerk
         );
     }
 
@@ -45,7 +45,7 @@ public class Telescope {
         return this.motor.getCurrentPosition();
     }
 
-    //input > 0 arm goes down
+    //input > 0 telescope goes down
     public void moveManual(double input){
         this.motor.setPower(input);
     }
@@ -58,9 +58,9 @@ public class Telescope {
             this.profile = MotionProfileGenerator.generateSimpleMotionProfile(
                     new MotionState(this.motor.getCurrentPosition(),0,0),
                     new MotionState(this.target,0,0),
-                    RobotConstants.arm_maxVel,
-                    RobotConstants.arm_maxAccel,
-                    RobotConstants.arm_maxJerk
+                    RobotConstants.telescope_maxVel,
+                    RobotConstants.telescope_maxAccel,
+                    RobotConstants.telescope_maxJerk
             );
             this.lastTarget = this.target;
             this.timer.reset();
@@ -78,7 +78,6 @@ public class Telescope {
         this.controller.setTargetAcceleration(state.getA());
         int motor_Pos = this.motor.getCurrentPosition();
         double correction = controller.update(motor_Pos);
-
         this.motor.setPower(correction);
         return correction;
     }

@@ -23,6 +23,7 @@ public class Shoulder {
     private ElapsedTime timer = new ElapsedTime();
 
     private double power = 0;
+    private boolean manualMoving = false;
 
     public Shoulder(DcMotorEx m, TouchSensor t) {
         this.motor = m;
@@ -53,14 +54,17 @@ public class Shoulder {
     }
 
     //input > 0 shoulder goes down
-    public void moveManual(double input){
-        if (this.touch.isPressed() && input > 0){
+    public double moveManual(double input){
+        this.manualMoving = true;
+        if (this.touch.isPressed() && input > 0) {
             this.motor.setPower(0);
             this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         } else {
             this.motor.setPower(input);
         }
+        setPosition(this.motor.getCurrentPosition());
+        return this.motor.getPower();
     }
 
     public void resetShoulder(){
@@ -69,6 +73,7 @@ public class Shoulder {
         this.motor.setPower(0);
         this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.lastTarget = this.motor.getCurrentPosition();
     }
 
     //@param target - encoder counts 0 to negative numbers
@@ -94,23 +99,27 @@ public class Shoulder {
         return this.target;
     }
 
-    public double update(){
-        MotionState state = this.profile.get(this.timer.seconds());
-        this.controller.setTargetPosition(state.getX());
-        this.controller.setTargetVelocity(state.getV());
-        this.controller.setTargetAcceleration(state.getA());
-        int motor_Pos = this.motor.getCurrentPosition();
-        double correction = controller.update(motor_Pos);
+    public double update() {
+        double correction = 0;
+        if (!this.manualMoving) {
+            MotionState state = this.profile.get(this.timer.seconds());
+            this.controller.setTargetPosition(state.getX());
+            this.controller.setTargetVelocity(state.getV());
+            this.controller.setTargetAcceleration(state.getA());
+            int motor_Pos = this.motor.getCurrentPosition();
+            correction = controller.update(motor_Pos);
 
-        if (this.touch.isPressed() && correction>0) {
-            this.motor.setPower(0);
-            this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            this.lastTarget = 0;
-            this.target = 0;
-        } else {
-            this.motor.setPower(correction);
+            if (this.touch.isPressed() && correction > 0) {
+                this.motor.setPower(0);
+                this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                this.lastTarget = 0;
+                this.target = 0;
+            } else {
+                this.motor.setPower(correction);
+            }
         }
+        this.manualMoving = false;
         return correction;
     }
 }

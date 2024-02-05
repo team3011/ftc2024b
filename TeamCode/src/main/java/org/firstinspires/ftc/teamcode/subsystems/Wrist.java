@@ -13,7 +13,6 @@ public class Wrist {
     public Wrist(Servo leftJoint, Servo rightJoint) {
         this.leftWrist = leftJoint;
         this.rightWrist = rightJoint;
-
         this.rightWrist.setDirection(Servo.Direction.REVERSE);
     }
 

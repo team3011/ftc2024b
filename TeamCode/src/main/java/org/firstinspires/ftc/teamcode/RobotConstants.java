@@ -17,8 +17,8 @@ public class RobotConstants {
         public static final int shoulder_maxVel = 500000;
         public static final int shoulder_maxAccel = 4000;
         public static final int shoulder_maxJerk = 20000;
-        public static final int shoulder_dropOffPos = -2000;
-        public static final int shoulder_stowPos = -150;
+        public static int shoulder_dropOffPos = -2125;
+        public static int shoulder_stowPos = 0;
         public static final int shoulder_pickupPos = 0;
 
 
@@ -31,7 +31,7 @@ public class RobotConstants {
         public static final int telescope_maxVel = 50000;
         public static final int telescope_maxAccel = 50000;
         public static final int telescope_maxJerk = 50000;
-        public static final int telescope_stowPos = -300;
+        public static int telescope_stowPos = -300;
         public static final int telescope_pickupPos = -1500;
         public static final int telescope_dropOffHigh = -3000;
 
@@ -40,15 +40,21 @@ public class RobotConstants {
         public static final double claw_closeBottom = 0.64;
         public static final double claw_openTop = 0.38;
         public static final double claw_closeTop = 0.6;
+        public static double claw_partialTop = 0.44;
+        public static double claw_partialBottom = 0.42;
+
         public static int claw_pickupPause = 1000;
+        public static int claw_dropTopPause = 1000;
+        public static int claw_dropBottomPause = 1000;
+
 
     //Wrist constants
         public static double wrist_stowPos = 0.85;
-        public static double wrist_pickupPos = 0.53;
+        public static double wrist_pickupPos = 0.45;
         public static double wrist_dropOffPos = 0.45;
-        public static int wrist_stowTime = 3000;
-        public static int wrist_pickupTime = 3000;
-        public static int wrist_dropOffTime = 3000;
+        public static int wrist_stowTime = 1000;
+        public static int wrist_pickupTime = 1000;
+        public static int wrist_dropOffTime = 1000;
 
     //lift constants
         public static final double lift_kP = 0.01;

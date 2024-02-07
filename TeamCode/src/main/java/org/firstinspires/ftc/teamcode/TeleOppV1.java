@@ -113,11 +113,13 @@ public class TeleOppV1 extends LinearOpMode {
 
             if (left_y != 0) {
                 shoulderWasMoving = true;
-                arm.manualMove(left_y);
+                arm.manualMoveA(left_y);
             } else if (shoulderWasMoving) {
                 shoulderWasMoving = false;
-                arm.manualMove(0);
+                arm.manualMoveA(0);
             }
+
+            arm.manualMoveB(right_y);
 
             double correction = arm.updateEverything();
 
@@ -125,6 +127,7 @@ public class TeleOppV1 extends LinearOpMode {
             telemetry.addData("tele correction",correction);
             telemetry.addData("shoulder encoder",arm.shoulderEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
+            telemetry.addData("lift encoder",arm.liftEncoder());
             telemetry.update();
         }
     }

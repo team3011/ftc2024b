@@ -28,4 +28,11 @@ public class JulliansClaw {
     public void closeTop(){
         this.right.setPosition(RobotConstants.claw_closeTop);
     }
+
+    public void partialBottom(){
+        this.left.setPosition(RobotConstants.claw_partialBottom);
+    }
+    public void partialTop(){
+        this.right.setPosition(RobotConstants.claw_partialTop);
+    }
 }

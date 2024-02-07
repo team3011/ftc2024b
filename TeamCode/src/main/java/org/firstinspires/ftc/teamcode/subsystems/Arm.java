@@ -23,10 +23,17 @@ public class Arm {
         this.wrist = new Wrist(lw, rw);
     }
 
-    public void manualMove(double input){
+
+
+    public void manualMoveA(double input){
+        double power = this.shoulder.moveManual(input);
+        this.telescope.moveManual(power/3.33);
+        //this.lift.moveManual(input);
+    }
+    public void manualMoveB(double input){
         //double power = this.shoulder.moveManual(input);
         //this.telescope.moveManual(power/3.33);
-        this.telescope.moveManual(input);
+        this.lift.moveManual(input);
     }
 
     public void tempWrist(double input){
@@ -35,10 +42,18 @@ public class Arm {
 
     public void moveToStow() throws InterruptedException {
         if (this.state == -1) {
-            this.claw.closeTop();
             this.claw.closeBottom();
             Thread.sleep(RobotConstants.claw_pickupPause);
+            this.claw.closeTop();
+            Thread.sleep(RobotConstants.claw_pickupPause);
         }
+        if (this.state == 1) {
+            this.claw.partialTop();
+            Thread.sleep(RobotConstants.claw_dropTopPause);
+            this.claw.partialBottom();
+            Thread.sleep(RobotConstants.claw_dropBottomPause);
+        }
+
         this.shoulder.setPosition(RobotConstants.shoulder_stowPos);
         this.telescope.setPosition(RobotConstants.telescope_stowPos);
         this.wrist.setTarget(RobotConstants.wrist_stowPos,RobotConstants.wrist_stowTime);
@@ -75,4 +90,6 @@ public class Arm {
     public int telescopeEncoder(){
         return this.telescope.getEncoderValue();
     }
+
+    public int liftEncoder() { return this.lift.getEncoderValue();}
 }

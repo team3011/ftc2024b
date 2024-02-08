@@ -1,9 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
+import com.acmerobotics.roadrunner.profile.MotionProfile;
+import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
+import com.acmerobotics.roadrunner.profile.MotionState;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -19,20 +25,28 @@ public class DriveSystemV2 {
     private DcMotorEx frontRight;
     private DcMotorEx backLeft;
     private DcMotorEx backRight;
-    private Encoder perpEncoder;
-    private Encoder parEncoder;
     NavxMicroNavigationSensor navX;
     IntegratingGyroscope gyro;
     private double headingToMaintain = 0;
     private String whatHeadingDo;
+    private int xTarget;
+    private int yTarget;
+    private double x_correction;
+    private double y_correction;
+    private PIDCoefficients x_coeffs;
+    private PIDFController x_controller;
+    private MotionProfile x_profile;
+    private ElapsedTime x_timer = new ElapsedTime();
+    private PIDCoefficients y_coeffs;
+    private PIDFController y_controller;
+    private MotionProfile y_profile;
+    private ElapsedTime y_timer = new ElapsedTime();
 
-    public DriveSystemV2(DcMotorEx fL, DcMotorEx fR, DcMotorEx bL, DcMotorEx bR, NavxMicroNavigationSensor n, Encoder parallel, Encoder perpindicular) {
+    public DriveSystemV2(DcMotorEx fL, DcMotorEx fR, DcMotorEx bL, DcMotorEx bR, NavxMicroNavigationSensor n) {
         this.frontLeft = fL;
         this.frontRight = fR;
         this.backLeft = bL;
         this.backRight = bR;
-        this.parEncoder = parallel;
-        this.perpEncoder = perpindicular;
         this.navX = n;
 
         this.frontLeft.setDirection(DcMotorEx.Direction.REVERSE);
@@ -43,7 +57,105 @@ public class DriveSystemV2 {
         this.frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        this.gyro = (IntegratingGyroscope)navX;
+        this.gyro = (IntegratingGyroscope)this.navX;
+
+        this.x_coeffs = new PIDCoefficients(RobotConstants.x_kP,RobotConstants.x_kI,RobotConstants.x_kD);
+        this.x_controller = new PIDFController(this.x_coeffs,0,0,0,(x,y)->RobotConstants.x_kG);
+        this.x_controller.setOutputBounds(-1,1);
+
+        this.x_profile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(0,0,0),
+                new MotionState(0,0,0),
+                RobotConstants.x_maxVel,
+                RobotConstants.x_maxAccel,
+                RobotConstants.x_maxJerk
+        );
+        this.y_coeffs = new PIDCoefficients(RobotConstants.y_kP,RobotConstants.y_kI,RobotConstants.y_kD);
+        this.y_controller = new PIDFController(this.y_coeffs,0,0,0,(x,y)->RobotConstants.y_kG);
+        this.y_controller.setOutputBounds(-1,1);
+
+        this.y_profile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(0,0,0),
+                new MotionState(0,0,0),
+                RobotConstants.y_maxVel,
+                RobotConstants.y_maxAccel,
+                RobotConstants.y_maxJerk
+        );
+
+        this.backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public int getxTarget(){
+        return this.xTarget;
+    }
+    public int getyTarget(){
+        return this.yTarget;
+    }
+    public double getX_correction(){
+        return x_correction;
+    }
+    public double getY_correction(){
+        return y_correction;
+    }
+
+    public void setTarget(int mmX, int mmY){
+        this.xTarget = mmX;
+        this.yTarget = mmY;
+
+        this.x_coeffs = new PIDCoefficients(RobotConstants.x_kP,RobotConstants.x_kI,RobotConstants.x_kD);
+        this.x_controller = new PIDFController(this.x_coeffs,0,0,0,(x,y)->RobotConstants.x_kG);
+        this.x_profile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(getXDistance(),0,0),
+                new MotionState(mmX,0,0),
+                RobotConstants.x_maxVel,
+                RobotConstants.x_maxAccel,
+                RobotConstants.x_maxJerk
+        );
+        this.x_timer.reset();
+
+        this.y_coeffs = new PIDCoefficients(RobotConstants.y_kP,RobotConstants.y_kI,RobotConstants.y_kD);
+        this.y_controller = new PIDFController(this.y_coeffs,0,0,0,(x,y)->RobotConstants.y_kG);
+        this.y_profile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(getYDistance(),0,0),
+                new MotionState(mmY,0,0),
+                RobotConstants.y_maxVel,
+                RobotConstants.y_maxAccel,
+                RobotConstants.y_maxJerk
+        );
+        this.y_timer.reset();
+    }
+
+    private int convertToMM(int input){
+        return (int) (input*0.15073*RobotConstants.drive_fudge/2);
+    }
+
+    public int getXDistance(){
+        return convertToMM(-this.backLeft.getCurrentPosition());
+    }
+
+    public int getYDistance(){
+        return convertToMM(-this.backRight.getCurrentPosition());
+    }
+    public void update(){
+        double x_correction = 0;
+        double y_correction = 0;
+        MotionState stateX = this.x_profile.get(this.x_timer.seconds());
+        this.x_controller.setTargetPosition(stateX.getX());
+        this.x_controller.setTargetVelocity(stateX.getV());
+        this.x_controller.setTargetAcceleration(stateX.getA());
+        x_correction = x_controller.update(getXDistance());
+        MotionState stateY = this.y_profile.get(this.y_timer.seconds());
+        this.y_controller.setTargetPosition(stateY.getX());
+        this.y_controller.setTargetVelocity(stateY.getV());
+        this.y_controller.setTargetAcceleration(stateY.getA());
+        y_correction = y_controller.update(getYDistance());
+        drive(y_correction,x_correction,0);
+
     }
 
     public void testMotors(int delay, double power) throws InterruptedException {
@@ -159,7 +271,7 @@ public class DriveSystemV2 {
         } else {
             result = this.headingToMaintain - reading;
         }
-        return -result;
+        return result;
     }
 
     /** changes our current turning speed to a turning speed that allows us to rotate

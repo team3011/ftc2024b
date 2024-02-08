@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 
 public class Telescope {
@@ -88,5 +89,9 @@ public class Telescope {
         }
         this.manualMoving = false;
         return correction;
+    }
+
+    public double getCurrent(){
+        return this.motor.getCurrent(CurrentUnit.MILLIAMPS);
     }
 }

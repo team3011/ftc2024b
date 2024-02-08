@@ -22,6 +22,10 @@ import org.firstinspires.ftc.teamcode.util.Encoder;
 public class TeleOppV1 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
+        NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
+
         Arm arm = new Arm(
                 hardwareMap.get(DcMotorEx.class,"shoulder"),
                 hardwareMap.get(TouchSensor.class,"shoulderSensor"),
@@ -30,20 +34,15 @@ public class TeleOppV1 extends LinearOpMode {
                 hardwareMap.get(Servo.class,"rightClaw"),
                 hardwareMap.get(DcMotorEx.class, "lift"),
                 hardwareMap.get(Servo.class, "left"),
-                hardwareMap.get(Servo.class, "right"));
-
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
-        NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
-
+                hardwareMap.get(Servo.class, "right"),
+                navx
+        );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),
                 hardwareMap.get(DcMotorEx.class, "frontRight"),
                 hardwareMap.get(DcMotorEx.class, "backLeft"),
                 hardwareMap.get(DcMotorEx.class, "backRight"),
-                navx,
-                new Encoder(hardwareMap.get(DcMotorEx.class, "backLeft")),
-                new Encoder(hardwareMap.get(DcMotorEx.class, "backRight")));
+                navx);
 
         ElapsedTime timer = new ElapsedTime();
         // The gyro automatically starts calibrating. This takes a few seconds.
@@ -66,11 +65,17 @@ public class TeleOppV1 extends LinearOpMode {
         double right_y = gamepad1.right_stick_y;
         double left_x = gamepad1.left_stick_x;
         double right_x = gamepad1.right_stick_x;
+        double left_t = gamepad1.left_trigger;
+        double right_t = gamepad1.right_trigger;
         boolean a_state = false;
         boolean b_state = false;
         boolean x_state = false;
         boolean y_state = false;
+        boolean dpadUp_state = false;
+        boolean dpadDown_state = false;
+
         boolean shoulderWasMoving = false;
+        boolean lifting = false;
 
 
 
@@ -80,7 +85,8 @@ public class TeleOppV1 extends LinearOpMode {
             right_y = zeroAnalogInput(gamepad1.right_stick_y);
             left_x = zeroAnalogInput(gamepad1.left_stick_x);
             right_x = zeroAnalogInput(gamepad1.right_stick_x);
-
+            left_t = -zeroAnalogInput(gamepad1.left_trigger);
+            right_t = zeroAnalogInput(gamepad1.right_trigger);
 
 
             if (gamepad1.a && !a_state) {
@@ -89,7 +95,26 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.a && a_state) {
                 a_state = false;
-                arm.moveToPickup();
+                //arm.moveToPickup();
+                //driveTrain.testMotors(2000,.5);
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_up && !dpadUp_state) {
+                dpadUp_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.dpad_up && dpadUp_state) {
+                dpadUp_state = false;
+                driveTrain.setTarget(RobotConstants.xTarget,RobotConstants.yTarget);
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_down && !dpadDown_state) {
+                dpadDown_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.dpad_down && dpadDown_state) {
+                dpadDown_state = false;
+                driveTrain.setTarget(0,0);
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {
@@ -111,6 +136,7 @@ public class TeleOppV1 extends LinearOpMode {
                 //code here will fire when button released
             }
 
+            /*
             if (left_y != 0) {
                 shoulderWasMoving = true;
                 arm.manualMoveA(left_y);
@@ -118,16 +144,42 @@ public class TeleOppV1 extends LinearOpMode {
                 shoulderWasMoving = false;
                 arm.manualMoveA(0);
             }
+             */
+            int stage = 0;
+            if (left_t != 0) {
+                shoulderWasMoving = true;
+                stage = arm.prepForLift(left_t);
+            } else if (shoulderWasMoving) {
+                shoulderWasMoving = false;
+                stage = arm.prepForLift(0);
+            }
 
-            arm.manualMoveB(right_y);
+            if (right_t != 0) {
+                lifting = true;
+                arm.lifting(right_t);
+            } else if (lifting) {
+                lifting = false;
+                arm.lifting(0);
+            }
 
-            double correction = arm.updateEverything();
+            //arm.manualMoveB(right_y);
+
+            driveTrain.update();
+            //double correction = arm.updateEverything();
 
             //driveTrain.drive(left_x,left_y,0);
-            telemetry.addData("tele correction",correction);
-            telemetry.addData("shoulder encoder",arm.shoulderEncoder());
-            telemetry.addData("telescope encoder",arm.telescopeEncoder());
-            telemetry.addData("lift encoder",arm.liftEncoder());
+            //telemetry.addData("stage",stage);
+            //telemetry.addData("right_y",right_y);
+            //telemetry.addData("left_t",left_t);
+            //telemetry.addData("tele correction",correction);
+            //telemetry.addData("shoulder encoder",arm.shoulderEncoder());
+            //telemetry.addData("telescope encoder",arm.telescopeEncoder());
+            //telemetry.addData("lift encoder",arm.liftEncoder());
+            //telemetry.addData("shoulder current",arm.shoulderCurrent());
+            //telemetry.addData("telescope current",arm.telescopeCurrent());
+            //telemetry.addData("pitch",arm.getPitch());
+            telemetry.addData("x_distance",driveTrain.getXDistance());
+            telemetry.addData("y_distance",driveTrain.getYDistance());
             telemetry.update();
         }
     }

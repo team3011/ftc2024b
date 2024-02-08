@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
@@ -24,6 +25,7 @@ public class Lift {
         this.motor = m;
         this.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.coeffs = new PIDCoefficients(RobotConstants.lift_kP,RobotConstants.lift_kI,RobotConstants.lift_kD);
         this.controller = new PIDFController(this.coeffs,0,0,0,(x, y)->RobotConstants.lift_kG);

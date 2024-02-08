@@ -141,21 +141,23 @@ public class DriveSystemV2 {
     public int getYDistance(){
         return convertToMM(-this.backRight.getCurrentPosition());
     }
-    public void update(){
+    public boolean update(int xTol, int yTol){
         double x_correction = 0;
         double y_correction = 0;
+        double currentX = getXDistance();
+        double currentY = getYDistance();
         MotionState stateX = this.x_profile.get(this.x_timer.seconds());
         this.x_controller.setTargetPosition(stateX.getX());
         this.x_controller.setTargetVelocity(stateX.getV());
         this.x_controller.setTargetAcceleration(stateX.getA());
-        x_correction = x_controller.update(getXDistance());
+        x_correction = x_controller.update(currentX);
         MotionState stateY = this.y_profile.get(this.y_timer.seconds());
         this.y_controller.setTargetPosition(stateY.getX());
         this.y_controller.setTargetVelocity(stateY.getV());
         this.y_controller.setTargetAcceleration(stateY.getA());
-        y_correction = y_controller.update(getYDistance());
+        y_correction = y_controller.update(currentY);
         drive(y_correction,x_correction,0);
-
+        return Math.abs(currentX-this.xTarget)<xTol && Math.abs(currentY-this.yTarget)<yTol;
     }
 
     public void testMotors(int delay, double power) throws InterruptedException {

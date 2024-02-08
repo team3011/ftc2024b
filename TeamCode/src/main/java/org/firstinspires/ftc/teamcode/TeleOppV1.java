@@ -76,8 +76,9 @@ public class TeleOppV1 extends LinearOpMode {
 
         boolean shoulderWasMoving = false;
         boolean lifting = false;
-
-
+        boolean autoRun = false;
+        int autoRunStage = 0;
+        boolean autoTargetSet = false;
 
 
         while(opModeIsActive()){
@@ -105,7 +106,8 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_up && dpadUp_state) {
                 dpadUp_state = false;
-                driveTrain.setTarget(RobotConstants.xTarget,RobotConstants.yTarget);
+                //driveTrain.setTarget(RobotConstants.xTarget,RobotConstants.yTarget);
+                autoRun = true;
                 //code here will fire when button released
             }
             if (gamepad1.dpad_down && !dpadDown_state) {
@@ -114,7 +116,8 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_down && dpadDown_state) {
                 dpadDown_state = false;
-                driveTrain.setTarget(0,0);
+                //driveTrain.setTarget(0,0);
+                autoRun = false;
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {
@@ -164,7 +167,61 @@ public class TeleOppV1 extends LinearOpMode {
 
             //arm.manualMoveB(right_y);
 
-            driveTrain.update();
+
+            if (autoRun && autoRunStage == 0) {
+                //move to the board
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-600, 1000);
+                    autoTargetSet = true;
+                    //prep for dropoff
+                }
+                if (driveTrain.update(10, 10)) {
+                    autoRunStage = 1;
+                    autoTargetSet = false;
+                    //prep to stow
+                    //this is the sleep in the prep to stow
+                    Thread.sleep(1000);
+                }
+            } else if (autoRun && autoRunStage == 1) {
+                //move to safe run location
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1300, 400);
+                    autoTargetSet = true;
+                    //prep to stow
+                }
+                if (driveTrain.update(50, 50)) {
+                    autoRunStage = 2;
+                    autoTargetSet = false;
+                }
+            } else if (autoRun && autoRunStage == 2) {
+                //move to pickup
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1300, -1500);
+                    autoTargetSet = true;
+                    //prep to pickup
+                }
+                if (driveTrain.update(10, 10)) {
+                    autoRunStage = 3;
+                    autoTargetSet = false;
+                    //pickup something and stow
+                    Thread.sleep(1000);
+                }
+            } else if (autoRun && autoRunStage == 3) {
+                //move to pickup
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1300, 400);
+                    autoTargetSet = true;
+                    //prep to pickup
+                }
+                if (driveTrain.update(50, 50)) {
+                    autoRunStage = 4;
+                    autoTargetSet = false;
+                }
+            } else if (autoRun && autoRunStage == 4) {
+                autoRunStage = 0;
+            }
+
+
             //double correction = arm.updateEverything();
 
             //driveTrain.drive(left_x,left_y,0);
@@ -182,6 +239,8 @@ public class TeleOppV1 extends LinearOpMode {
             telemetry.addData("y_distance",driveTrain.getYDistance());
             telemetry.update();
         }
+
+        driveTrain.drive(0,0,0);
     }
 
     private double zeroAnalogInput(double input){

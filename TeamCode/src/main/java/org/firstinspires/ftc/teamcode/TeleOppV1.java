@@ -175,7 +175,7 @@ public class TeleOppV1 extends LinearOpMode {
                     autoTargetSet = true;
                     //prep for dropoff
                 }
-                if (driveTrain.update(10, 10)) {
+                if (driveTrain.update(25, 25)) {
                     autoRunStage = 1;
                     autoTargetSet = false;
                     //prep to stow
@@ -189,7 +189,7 @@ public class TeleOppV1 extends LinearOpMode {
                     autoTargetSet = true;
                     //prep to stow
                 }
-                if (driveTrain.update(50, 50)) {
+                if (driveTrain.update(0, 100)) {
                     autoRunStage = 2;
                     autoTargetSet = false;
                 }
@@ -200,7 +200,7 @@ public class TeleOppV1 extends LinearOpMode {
                     autoTargetSet = true;
                     //prep to pickup
                 }
-                if (driveTrain.update(10, 10)) {
+                if (driveTrain.update(50, 50)) {
                     autoRunStage = 3;
                     autoTargetSet = false;
                     //pickup something and stow
@@ -225,7 +225,7 @@ public class TeleOppV1 extends LinearOpMode {
             //double correction = arm.updateEverything();
 
             //driveTrain.drive(left_x,left_y,0);
-            //telemetry.addData("stage",stage);
+            telemetry.addData("stage",autoRunStage);
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);
             //telemetry.addData("tele correction",correction);

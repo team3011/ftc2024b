@@ -297,5 +297,7 @@ public class DriveSystemV2 {
     public String getWhatHeadingDo(){
         return this.whatHeadingDo;
     }
+
+    public void setHeadingToMaintain(double input){ this.headingToMaintain = input; }
 }
 

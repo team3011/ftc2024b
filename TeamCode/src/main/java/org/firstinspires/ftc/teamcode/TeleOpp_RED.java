@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -10,16 +11,10 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
-import org.firstinspires.ftc.teamcode.subsystems.Telescope;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSystemV2;
-import org.firstinspires.ftc.teamcode.subsystems.JulliansClaw;
-import org.firstinspires.ftc.teamcode.subsystems.Lift;
-import org.firstinspires.ftc.teamcode.subsystems.Shoulder;
-import org.firstinspires.ftc.teamcode.subsystems.Wrist;
-import org.firstinspires.ftc.teamcode.util.Encoder;
 
 @TeleOp(name = "TeleOppV1", group = "Robot")
-public class TeleOppV1 extends LinearOpMode {
+public class TeleOpp_RED extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -43,6 +38,9 @@ public class TeleOppV1 extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "backLeft"),
                 hardwareMap.get(DcMotorEx.class, "backRight"),
                 navx);
+        RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
+        RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_LAVA_PALETTE;
+        blinkinLedDriver.setPattern(pattern);
 
         ElapsedTime timer = new ElapsedTime();
         // The gyro automatically starts calibrating. This takes a few seconds.
@@ -73,6 +71,8 @@ public class TeleOppV1 extends LinearOpMode {
         boolean y_state = false;
         boolean dpadUp_state = false;
         boolean dpadDown_state = false;
+        boolean dpadLeft_state = false;
+        boolean dpadRight_state = false;
 
         boolean shoulderWasMoving = false;
         boolean lifting = false;
@@ -107,6 +107,7 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_up && dpadUp_state) {
                 dpadUp_state = false;
+                driveTrain.setHeadingToMaintain(1.57);
                 //code here will fire when button released
             }
             if (gamepad1.dpad_down && !dpadDown_state) {
@@ -115,6 +116,25 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_down && dpadDown_state) {
                 dpadDown_state = false;
+                driveTrain.setHeadingToMaintain(-1.57);
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_left && !dpadLeft_state) {
+                dpadLeft_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.dpad_left && dpadLeft_state) {
+                dpadLeft_state = false;
+                driveTrain.setHeadingToMaintain(3.14);
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_right && !dpadRight_state) {
+                dpadRight_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.dpad_right && dpadRight_state) {
+                dpadRight_state = false;
+                driveTrain.setHeadingToMaintain(0);
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {

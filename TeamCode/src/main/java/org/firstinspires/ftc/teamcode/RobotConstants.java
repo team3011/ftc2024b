@@ -4,12 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class RobotConstants {
-    //Rev motor constants
-        public static final int TICKS_PER_REV = 28;
-        public static final int MAX_RPM = 6000;
-
     //shoulder constants
-        public static final double shoulder_GEAR_RATIO = (108.0/16.0)*3*3*4;
         public static final double shoulder_kP = 0.008;
         public static final double shoulder_kI = 0;
         public static final double shoulder_kD = 0;
@@ -23,7 +18,6 @@ public class RobotConstants {
 
 
     //telescope constants
-        public static final double telescope_GEAR_RATIO = 4*4*4;
         public static final double telescope_kP = 0.01;
         public static final double telescope_kI = 0;
         public static final double telescope_kD = 0;

@@ -137,6 +137,11 @@ public class Arm {
         return robotPitch;
     }
 
+    public void initialMove(){
+        this.telescope.resetEncoder();
+        this.shoulder.setPosition(RobotConstants.shoulder_stowPos-100);
+    }
+
     public void moveToStow() throws InterruptedException {
         if (this.state == -1) {
             this.claw.closeBottom();

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -18,8 +19,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Shoulder;
 import org.firstinspires.ftc.teamcode.subsystems.Wrist;
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
-@TeleOp(name = "TeleOppV1", group = "Robot")
-public class TeleOppV1 extends LinearOpMode {
+@Autonomous(name = "AutoRight")
+public class AutoOppRight extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -77,12 +78,11 @@ public class TeleOppV1 extends LinearOpMode {
         boolean shoulderWasMoving = false;
         boolean lifting = false;
         boolean autoRun = false;
-        //int autoRunStage = 0;
-        //boolean autoTargetSet = false;
+        int autoRunStage = 0;
+        boolean autoTargetSet = false;
 
         //arm.tempWrist(.5);
 
-        arm.initialMove();
         while(opModeIsActive()){
             left_y = zeroAnalogInput(gamepad1.left_stick_y);
             right_y = zeroAnalogInput(gamepad1.right_stick_y);
@@ -98,7 +98,8 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.a && a_state) {
                 a_state = false;
-                arm.moveToPickup();
+                //arm.moveToPickup();
+                //driveTrain.testMotors(2000,.5);
                 //code here will fire when button released
             }
             if (gamepad1.dpad_up && !dpadUp_state) {
@@ -107,6 +108,8 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_up && dpadUp_state) {
                 dpadUp_state = false;
+                //driveTrain.setTarget(RobotConstants.xTarget,RobotConstants.yTarget);
+                autoRun = true;
                 //code here will fire when button released
             }
             if (gamepad1.dpad_down && !dpadDown_state) {
@@ -115,6 +118,8 @@ public class TeleOppV1 extends LinearOpMode {
             }
             if (!gamepad1.dpad_down && dpadDown_state) {
                 dpadDown_state = false;
+                //driveTrain.setTarget(0,0);
+                autoRun = false;
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {
@@ -136,7 +141,7 @@ public class TeleOppV1 extends LinearOpMode {
                 //code here will fire when button released
             }
 
-
+            /*
             if (left_y != 0) {
                 shoulderWasMoving = true;
                 arm.manualMoveA(left_y);
@@ -144,7 +149,7 @@ public class TeleOppV1 extends LinearOpMode {
                 shoulderWasMoving = false;
                 arm.manualMoveA(0);
             }
-
+             */
             int stage = 0;
             if (left_t != 0) {
                 shoulderWasMoving = true;
@@ -163,21 +168,88 @@ public class TeleOppV1 extends LinearOpMode {
             }
 
             //arm.manualMoveB(right_y);
-            double correction = arm.updateEverything();
 
-            driveTrain.drive(left_x,left_y,0);
-            telemetry.addData("stage",stage);
+
+            if (autoRun && autoRunStage == 0) {
+                //move to the board
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-600, 1000,0,0);
+                    autoTargetSet = true;
+                    //prep for dropoff
+                }
+                if (driveTrain.update(25, 25)) {
+                    autoRunStage = 1;
+                    autoTargetSet = false;
+                    //prep to stow
+                    //this is the sleep in the prep to stow
+                    Thread.sleep(1000);
+                }
+            } else if (autoRun && autoRunStage == 1) {
+                //move to safe run location
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1400, 500,0,RobotConstants.speedE);
+                    autoTargetSet = true;
+                    //prep to stow
+                }
+                if (driveTrain.update(100, 100)) {
+                    autoRunStage = 2;
+                    autoTargetSet = false;
+                }
+            } else if (autoRun && autoRunStage == 2) {
+                //move to pickup
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1300, -1500,RobotConstants.speedB,0);
+                    autoTargetSet = true;
+                    //prep to pickup
+                }
+                if (driveTrain.update(50, 50)) {
+                    autoRunStage = 3;
+                    autoTargetSet = false;
+                    //pickup something and stow
+                    Thread.sleep(1000);
+                }
+            } else if (autoRun && autoRunStage == 3) {
+                //move to pickup
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-1300, 400,0,0);
+                    autoTargetSet = true;
+                    //prep to pickup
+                }
+                if (driveTrain.update(50, 50)) {
+                    autoRunStage = 4;
+                    autoTargetSet = false;
+                }
+            } else if (autoRun && autoRunStage == 4) {
+                //move to pickup
+                if (!autoTargetSet) {
+                    driveTrain.setTarget(-600, 1000,0,0);
+                    autoTargetSet = true;
+                    //prep to pickup
+                }
+                if (driveTrain.update(25, 25)) {
+                    autoRunStage = 5;
+                    autoTargetSet = false;
+                }
+            } else if (autoRun && autoRunStage == 5) {
+                autoRunStage = 1;
+            }
+
+
+            //double correction = arm.updateEverything();
+
+            //driveTrain.drive(left_x,left_y,0);
+            telemetry.addData("stage",autoRunStage);
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);
             //telemetry.addData("tele correction",correction);
-            telemetry.addData("shoulder encoder",arm.shoulderEncoder());
-            telemetry.addData("telescope encoder",arm.telescopeEncoder());
-            telemetry.addData("lift encoder",arm.liftEncoder());
+            //telemetry.addData("shoulder encoder",arm.shoulderEncoder());
+            //telemetry.addData("telescope encoder",arm.telescopeEncoder());
+            //telemetry.addData("lift encoder",arm.liftEncoder());
             //telemetry.addData("shoulder current",arm.shoulderCurrent());
             //telemetry.addData("telescope current",arm.telescopeCurrent());
             //telemetry.addData("pitch",arm.getPitch());
-            //telemetry.addData("x_distance",driveTrain.getXDistance());
-            //telemetry.addData("y_distance",driveTrain.getYDistance());
+            telemetry.addData("x_distance",driveTrain.getXDistance());
+            telemetry.addData("y_distance",driveTrain.getYDistance());
             telemetry.update();
         }
 
@@ -191,3 +263,4 @@ public class TeleOppV1 extends LinearOpMode {
         return input;
     }
 }
+

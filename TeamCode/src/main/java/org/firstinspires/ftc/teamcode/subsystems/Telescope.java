@@ -72,6 +72,11 @@ public class Telescope {
         }
     }
 
+    public void resetEncoder(){
+        this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
     public int getTarget(){
         return this.target;
     }

@@ -103,15 +103,15 @@ public class DriveSystemV2 {
         return y_correction;
     }
 
-    public void setTarget(int mmX, int mmY){
+    public void setTarget(int mmX, int mmY, double speedB, double speedE){
         this.xTarget = mmX;
         this.yTarget = mmY;
 
         this.x_coeffs = new PIDCoefficients(RobotConstants.x_kP,RobotConstants.x_kI,RobotConstants.x_kD);
         this.x_controller = new PIDFController(this.x_coeffs,0,0,0,(x,y)->RobotConstants.x_kG);
         this.x_profile = MotionProfileGenerator.generateSimpleMotionProfile(
-                new MotionState(getXDistance(),0,0),
-                new MotionState(mmX,0,0),
+                new MotionState(getXDistance(),speedB,0),
+                new MotionState(mmX,speedE,0),
                 RobotConstants.x_maxVel,
                 RobotConstants.x_maxAccel,
                 RobotConstants.x_maxJerk
@@ -121,8 +121,8 @@ public class DriveSystemV2 {
         this.y_coeffs = new PIDCoefficients(RobotConstants.y_kP,RobotConstants.y_kI,RobotConstants.y_kD);
         this.y_controller = new PIDFController(this.y_coeffs,0,0,0,(x,y)->RobotConstants.y_kG);
         this.y_profile = MotionProfileGenerator.generateSimpleMotionProfile(
-                new MotionState(getYDistance(),0,0),
-                new MotionState(mmY,0,0),
+                new MotionState(getYDistance(),speedB,0),
+                new MotionState(mmY,speedE,0),
                 RobotConstants.y_maxVel,
                 RobotConstants.y_maxAccel,
                 RobotConstants.y_maxJerk
@@ -157,7 +157,7 @@ public class DriveSystemV2 {
         this.y_controller.setTargetAcceleration(stateY.getA());
         y_correction = y_controller.update(currentY);
         drive(y_correction,x_correction,0);
-        return Math.abs(currentX-this.xTarget)<xTol && Math.abs(currentY-this.yTarget)<yTol;
+        return (Math.abs(currentX-this.xTarget)<xTol && Math.abs(currentY-this.yTarget)<yTol);
     }
 
     public void testMotors(int delay, double power) throws InterruptedException {

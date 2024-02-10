@@ -165,7 +165,7 @@ public class TeleOppV1 extends LinearOpMode {
             //arm.manualMoveB(right_y);
             double correction = arm.updateEverything();
 
-            driveTrain.drive(left_x,left_y,0);
+            //driveTrain.drive(left_x,left_y,0);
             telemetry.addData("stage",stage);
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);

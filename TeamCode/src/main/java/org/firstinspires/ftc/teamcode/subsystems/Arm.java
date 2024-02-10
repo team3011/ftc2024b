@@ -139,7 +139,7 @@ public class Arm {
 
     public void initialMove(){
         this.telescope.resetEncoder();
-        this.shoulder.setPosition(RobotConstants.shoulder_stowPos-100);
+        this.shoulder.setPosition(RobotConstants.shoulder_stowPos-150);
     }
 
     public void moveToStow() throws InterruptedException {
@@ -150,10 +150,10 @@ public class Arm {
             Thread.sleep(RobotConstants.claw_pickupPause);
         }
         if (this.state == 1) {
-            this.claw.partialTop();
-            Thread.sleep(RobotConstants.claw_dropTopPause);
             this.claw.partialBottom();
             Thread.sleep(RobotConstants.claw_dropBottomPause);
+            this.claw.partialTop();
+            Thread.sleep(RobotConstants.claw_dropTopPause);
         }
 
         this.shoulder.setPosition(RobotConstants.shoulder_stowPos);

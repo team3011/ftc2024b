@@ -14,10 +14,10 @@ public class RobotConstants {
         public static final double shoulder_kI = 0;
         public static final double shoulder_kD = 0;
         public static final double shoulder_kG = -0.1;
-        public static int shoulder_maxVel = 50000;
-        public static int shoulder_maxAccel = 3000;
-        public static int shoulder_maxJerk = 20000;
-        public static final int shoulder_dropOffPos = -2125;
+        public static final int shoulder_maxVel = 5000;
+        public static final int shoulder_maxAccel = 1000;
+        public static final int shoulder_maxJerk = 1000;
+        public static int shoulder_dropOffPos = -2100;
         public static final int shoulder_stowPos = 0;
         public static final int shoulder_pickupPos = 0;
 
@@ -28,29 +28,29 @@ public class RobotConstants {
         public static final double telescope_kI = 0;
         public static final double telescope_kD = 0;
         public static final double telescope_kG = 0.025;
-        public static int telescope_maxVel = 10000;
-        public static int telescope_maxAccel = 10000;
-        public static int telescope_maxJerk = 2000;
+        public static final int telescope_maxVel = 10000;
+        public static final int telescope_maxAccel = 10000;
+        public static final int telescope_maxJerk = 2000;
         public static final int telescope_stowPos = -300;
         public static final int telescope_pickupPos = -1500;
-        public static final int telescope_dropOffHigh = -3000;
+        public static int telescope_dropOffHigh = -3700;
 
     //claw constants
-        public static final double claw_openBottom = 0.4;
-        public static final double claw_closeBottom = 0.64;
-        public static final double claw_openTop = 0.38;
-        public static final double claw_closeTop = 0.6;
-        public static final double claw_partialTop = 0.44;
-        public static final double claw_partialBottom = 0.42;
+        public static double claw_openBottom = 0.4;
+        public static double claw_closeBottom = 0.64;
+        public static double claw_openTop = 0.55;
+        public static double claw_closeTop = 0.68;
+        public static double claw_partialTop = 0.62;
+        public static double claw_partialBottom = 0.4;
 
-        public static final int claw_pickupPause = 1000;
-        public static final int claw_dropTopPause = 1000;
-        public static final int claw_dropBottomPause = 1000;
+        public static int claw_pickupPause = 250;
+        public static int claw_dropTopPause = 400;
+        public static int claw_dropBottomPause = 400;
 
 
     //Wrist constants
         public static double wrist_stowPos = 0.60;
-        public static double wrist_pickupPos = 0.1;
+        public static double wrist_pickupPos = 0.06;
         public static double wrist_dropOffPos = 0.65;
         public static final int wrist_stowTime = 1000;
         public static final int wrist_pickupTime = 1000;

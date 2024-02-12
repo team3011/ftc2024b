@@ -25,6 +25,7 @@ public class Shoulder {
 
     private double power = 0;
     private boolean manualMoving = false;
+    private boolean resetEncoder = false;
 
     public Shoulder(DcMotorEx m, TouchSensor t) {
         this.motor = m;
@@ -69,7 +70,7 @@ public class Shoulder {
     }
 
     public void resetShoulder(){
-        this.motor.setPower(.25);
+        this.motor.setPower(.15);
         while (!this.touch.isPressed()) {}
         this.motor.setPower(0);
         this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -79,6 +80,9 @@ public class Shoulder {
 
     //@param target - encoder counts 0 to negative numbers
     public void setPosition(int t){
+        if (t == 0) {
+            this.resetEncoder = true;
+        }
         //convert centimeters to ticks
         this.target = t;
         if (this.target != this.lastTarget) {
@@ -100,24 +104,44 @@ public class Shoulder {
         return this.target;
     }
 
+    public boolean getResetEncoder() { return this.resetEncoder;}
+
     public double update() {
         double correction = 0;
         if (!this.manualMoving) {
-            MotionState state = this.profile.get(this.timer.seconds());
-            this.controller.setTargetPosition(state.getX());
-            this.controller.setTargetVelocity(state.getV());
-            this.controller.setTargetAcceleration(state.getA());
             int motor_Pos = this.motor.getCurrentPosition();
-            correction = controller.update(motor_Pos);
-
-            if (this.touch.isPressed() && correction > 0) {
+            if (this.resetEncoder && Math.abs(motor_Pos) < 10 && !this.touch.isPressed()) {
+                this.motor.setPower(.2);
+            } else if (this.resetEncoder && this.touch.isPressed()) {
                 this.motor.setPower(0);
                 this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 this.lastTarget = 0;
                 this.target = 0;
+                this.resetEncoder = false;
             } else {
-                this.motor.setPower(correction);
+                MotionState state = this.profile.get(this.timer.seconds());
+                this.controller.setTargetPosition(state.getX());
+                this.controller.setTargetVelocity(state.getV());
+                this.controller.setTargetAcceleration(state.getA());
+                correction = controller.update(motor_Pos);
+
+                if (this.resetEncoder && motor_Pos > -1500) {
+                    correction *= .2;
+                }
+                if (!this.resetEncoder && motor_Pos < -1500 && correction < 0) {
+                    correction *= .2;
+                }
+                if (this.touch.isPressed() && correction > 0) {
+                    this.motor.setPower(0);
+                    this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    this.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    this.lastTarget = 0;
+                    this.target = 0;
+                    this.resetEncoder = false;
+                } else {
+                    this.motor.setPower(correction);
+                }
             }
         }
         this.manualMoving = false;

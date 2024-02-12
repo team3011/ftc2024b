@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gyroscope;
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RobotConstants;
-
+@Config
 public class Arm {
     private Shoulder shoulder;
     private Telescope telescope;
@@ -21,8 +22,10 @@ public class Arm {
     private Wrist wrist;
     private NavxMicroNavigationSensor navx;
     private IntegratingGyroscope gyro;
-    private int state = -1;
+    private int state = 0;
     private int stage = 0;
+    public static int shoulderOffset = 0;
+    public static double wristOffset = 0;
 
 
     public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw, NavxMicroNavigationSensor n){
@@ -160,29 +163,45 @@ public class Arm {
         this.telescope.setPosition(RobotConstants.telescope_stowPos);
         this.wrist.setTarget(RobotConstants.wrist_stowPos,RobotConstants.wrist_stowTime);
         //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
+        this.state = 0;
     }
 
-    public void moveToPickup(){
-        this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
-        this.telescope.setPosition(RobotConstants.telescope_pickupPos);
-        this.wrist.setTarget(RobotConstants.wrist_pickupPos,RobotConstants.wrist_pickupTime);
-        this.claw.openBottom();
-        this.claw.openTop();
-        this.state = -1;
+    public void moveToPickup(int level){
+        if (this.state != 1) {
+            if (level == 0) {
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
+                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
+            } else if (level == 1) {
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 50);
+                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
+            } else if (level == 2) {
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 70
+                );
+                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
+            } else if (level == 3) {
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 86);
+                this.wrist.setTarget(RobotConstants.wrist_pickupPos + Arm.wristOffset, RobotConstants.wrist_pickupTime);
+            }
+            this.telescope.setPosition(RobotConstants.telescope_pickupPos);
+            this.claw.openBottom();
+            this.claw.openTop();
+            this.state = -1;
+        }
     }
 
     public void moveToDropOff(){
-        this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
-        this.telescope.setPosition(RobotConstants.telescope_dropOffHigh);
-        this.wrist.setTarget(RobotConstants.wrist_dropOffPos,RobotConstants.wrist_dropOffTime);
-        this.state = 1;
+        if (this.state != -1) {
+            this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
+            this.telescope.setPosition(RobotConstants.telescope_dropOffHigh);
+            this.wrist.setTarget(RobotConstants.wrist_dropOffPos, RobotConstants.wrist_dropOffTime);
+            this.state = 1;
+        }
     }
 
     public double updateEverything(){
-
-        this.shoulder.update();
+        this.wrist.update();
         this.telescope.update();
-        return this.wrist.update();
+        return this.shoulder.update();
     }
 
     public int shoulderEncoder(){
@@ -197,4 +216,10 @@ public class Arm {
 
     public double shoulderCurrent() { return this.shoulder.getCurrent();}
     public double telescopeCurrent() { return this.telescope.getCurrent();}
+
+    public void resetShoulder() { this.shoulder.resetShoulder();}
+
+    public boolean getResetStatus() {
+        return this.shoulder.getResetEncoder();
+    }
 }

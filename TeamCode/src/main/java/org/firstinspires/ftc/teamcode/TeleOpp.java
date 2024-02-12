@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,8 +14,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSystemV2;
 
-@TeleOp(name = "TeleOppV1", group = "Robot")
-public class TeleOpp_RED extends LinearOpMode {
+@Config
+@TeleOp(name = "TeleOpp", group = "Robot")
+public class TeleOpp extends LinearOpMode {
+    public static boolean driveEnabled = true;
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -39,7 +42,7 @@ public class TeleOpp_RED extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "backRight"),
                 navx);
         RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
-        RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_LAVA_PALETTE;
+        RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
         blinkinLedDriver.setPattern(pattern);
 
         ElapsedTime timer = new ElapsedTime();
@@ -69,10 +72,12 @@ public class TeleOpp_RED extends LinearOpMode {
         boolean b_state = false;
         boolean x_state = false;
         boolean y_state = false;
+        boolean rightB_state = false;
         boolean dpadUp_state = false;
         boolean dpadDown_state = false;
         boolean dpadLeft_state = false;
         boolean dpadRight_state = false;
+        int pickupLevel = 0;
 
         boolean shoulderWasMoving = false;
         boolean lifting = false;
@@ -98,43 +103,64 @@ public class TeleOpp_RED extends LinearOpMode {
             }
             if (!gamepad1.a && a_state) {
                 a_state = false;
-                arm.moveToPickup();
+                arm.moveToPickup(pickupLevel);
                 //code here will fire when button released
             }
-            if (gamepad1.dpad_up && !dpadUp_state) {
+            if (gamepad1.b && !b_state) {
+                b_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.b && b_state) {
+                b_state = false;
+                arm.resetShoulder();
+                //code here will fire when button released
+            }
+            if (gamepad1.right_bumper && !rightB_state) {
+                rightB_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.right_bumper && rightB_state) {
+                rightB_state = false;
+                pickupLevel += 1;
+                if (pickupLevel > 3) {
+                    pickupLevel = 0;
+                }
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_up && !dpadUp_state && TeleOpp.driveEnabled) {
                 dpadUp_state = true;
                 //code here will fire when button pressed
             }
-            if (!gamepad1.dpad_up && dpadUp_state) {
+            if (!gamepad1.dpad_up && dpadUp_state && TeleOpp.driveEnabled) {
                 dpadUp_state = false;
-                driveTrain.setHeadingToMaintain(1.57);
-                //code here will fire when button released
-            }
-            if (gamepad1.dpad_down && !dpadDown_state) {
-                dpadDown_state = true;
-                //code here will fire when button pressed
-            }
-            if (!gamepad1.dpad_down && dpadDown_state) {
-                dpadDown_state = false;
                 driveTrain.setHeadingToMaintain(-1.57);
                 //code here will fire when button released
             }
-            if (gamepad1.dpad_left && !dpadLeft_state) {
+            if (gamepad1.dpad_down && !dpadDown_state && TeleOpp.driveEnabled) {
+                dpadDown_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.dpad_down && dpadDown_state && TeleOpp.driveEnabled) {
+                dpadDown_state = false;
+                driveTrain.setHeadingToMaintain(1.57);
+                //code here will fire when button released
+            }
+            if (gamepad1.dpad_left && !dpadLeft_state && TeleOpp.driveEnabled) {
                 dpadLeft_state = true;
                 //code here will fire when button pressed
             }
-            if (!gamepad1.dpad_left && dpadLeft_state) {
+            if (!gamepad1.dpad_left && dpadLeft_state && TeleOpp.driveEnabled) {
                 dpadLeft_state = false;
-                driveTrain.setHeadingToMaintain(3.14);
+                driveTrain.setHeadingToMaintain(0);
                 //code here will fire when button released
             }
-            if (gamepad1.dpad_right && !dpadRight_state) {
+            if (gamepad1.dpad_right && !dpadRight_state && TeleOpp.driveEnabled) {
                 dpadRight_state = true;
                 //code here will fire when button pressed
             }
-            if (!gamepad1.dpad_right && dpadRight_state) {
+            if (!gamepad1.dpad_right && dpadRight_state && TeleOpp.driveEnabled) {
                 dpadRight_state = false;
-                driveTrain.setHeadingToMaintain(0);
+                driveTrain.setHeadingToMaintain(3.14);
                 //code here will fire when button released
             }
             if (gamepad1.x && !x_state) {
@@ -156,7 +182,7 @@ public class TeleOpp_RED extends LinearOpMode {
                 //code here will fire when button released
             }
 
-
+            /*
             if (left_y != 0) {
                 shoulderWasMoving = true;
                 arm.manualMoveA(left_y);
@@ -164,6 +190,7 @@ public class TeleOpp_RED extends LinearOpMode {
                 shoulderWasMoving = false;
                 arm.manualMoveA(0);
             }
+             */
 
             int stage = 0;
             if (left_t != 0) {
@@ -185,11 +212,16 @@ public class TeleOpp_RED extends LinearOpMode {
             //arm.manualMoveB(right_y);
             double correction = arm.updateEverything();
 
-            //driveTrain.drive(left_x,left_y,0);
+            if (TeleOpp.driveEnabled) {
+                driveTrain.drive(left_x, left_y, 0);
+            }
+
             telemetry.addData("stage",stage);
+            telemetry.addData("pickup level",pickupLevel);
+            telemetry.addData("reset shoulder status",arm.getResetStatus());
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);
-            //telemetry.addData("tele correction",correction);
+            telemetry.addData("tele correction",correction);
             telemetry.addData("shoulder encoder",arm.shoulderEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
             telemetry.addData("lift encoder",arm.liftEncoder());
@@ -207,6 +239,10 @@ public class TeleOpp_RED extends LinearOpMode {
     private double zeroAnalogInput(double input){
         if (Math.abs(input)<0.1){
             input = 0;
+        } else if (input < 0) {
+            input += .1;
+        } else if (input > 0) {
+            input -= .1;
         }
         return input;
     }

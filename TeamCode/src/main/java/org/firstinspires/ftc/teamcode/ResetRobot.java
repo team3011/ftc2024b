@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,11 +21,6 @@ public class ResetRobot extends LinearOpMode {
         Shoulder shoulder = new Shoulder(
                 hardwareMap.get(DcMotorEx.class, "shoulder"),
                 hardwareMap.get(TouchSensor.class, "shoulderSensor"));
-
-
-        //Servo servo = hardwareMap.get(Servo.class,"");
-
-
         Wrist wrist = new Wrist(
                 hardwareMap.get(Servo.class,"left"),
                 hardwareMap.get(Servo.class,"right"));
@@ -32,8 +28,10 @@ public class ResetRobot extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class,"lift"));
         Telescope telescope = new Telescope(
                 hardwareMap.get(DcMotorEx.class,"telescope"));
+        RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
+        RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
+        blinkinLedDriver.setPattern(pattern);
         waitForStart();
-        shoulder.resetShoulder();
         double left_y = gamepad1.left_stick_y;
         double right_y = gamepad1.right_stick_y;
         double left_x = gamepad1.left_stick_x;
@@ -44,8 +42,12 @@ public class ResetRobot extends LinearOpMode {
             right_y = zeroAnalogInput(gamepad1.right_stick_y);
             left_x = zeroAnalogInput(gamepad1.left_stick_x);
             right_x = zeroAnalogInput(gamepad1.right_stick_x);
+
+            if (gamepad1.x) {
+                shoulder.resetShoulder();
+            }
             lift.moveManual(right_y);
-            telescope.moveManual(left_y);
+            telescope.moveManual(left_y*.2);
             wrist.moveWrist(RobotConstants.wrist_temp);
         }
 

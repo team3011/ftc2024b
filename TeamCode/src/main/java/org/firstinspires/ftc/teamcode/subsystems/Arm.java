@@ -1,18 +1,25 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import android.text.method.Touch;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gyroscope;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RobotConstants;
+
+import java.util.Timer;
+
 @Config
 public class Arm {
     private Shoulder shoulder;
@@ -26,19 +33,24 @@ public class Arm {
     private int stage = 0;
     public static int shoulderOffset = 0;
     public static double wristOffset = 0;
+    private boolean autoPickup = false;
 
+    private RevBlinkinLedDriver blinkinLedDriver;
+    private RevBlinkinLedDriver.BlinkinPattern breathRed = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
+    private RevBlinkinLedDriver.BlinkinPattern violet = RevBlinkinLedDriver.BlinkinPattern.VIOLET;
+    private ElapsedTime colorTimer = new ElapsedTime();
 
-    public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw, NavxMicroNavigationSensor n){
+    public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw, NavxMicroNavigationSensor n, TouchSensor wt, RevBlinkinLedDriver rbld){
         this.shoulder = new Shoulder(sm, st);
         this.telescope = new Telescope(tm);
-        this.claw = new JulliansClaw(lc, rc);
+        this.claw = new JulliansClaw(lc, rc, wt);
         this.lift = new Lift(lm);
         this.wrist = new Wrist(lw, rw);
         this.navx = n;
         this.gyro = (IntegratingGyroscope)this.navx;
+        this.blinkinLedDriver = rbld;
+        this.blinkinLedDriver.setPattern(breathRed);
     }
-
-
 
     public void manualMoveA(double input){
         double speed = this.shoulder.moveManual(input);
@@ -172,20 +184,21 @@ public class Arm {
                 this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
                 this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
             } else if (level == 1) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 50);
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack1);
                 this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
             } else if (level == 2) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 70
-                );
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack2);
                 this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
             } else if (level == 3) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos - 86);
+                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack3);
                 this.wrist.setTarget(RobotConstants.wrist_pickupPos + Arm.wristOffset, RobotConstants.wrist_pickupTime);
             }
             this.telescope.setPosition(RobotConstants.telescope_pickupPos);
             this.claw.openBottom();
             this.claw.openTop();
             this.state = -1;
+            this.autoPickup = true;
+
         }
     }
 
@@ -198,10 +211,20 @@ public class Arm {
         }
     }
 
-    public double updateEverything(){
+    public boolean updateEverything() throws InterruptedException {
         this.wrist.update();
+        this.shoulder.update();
+        if (this.autoPickup && this.claw.getClawSensor()) {
+            moveToStow();
+            this.autoPickup = false;
+            this.blinkinLedDriver.setPattern(this.violet);
+            this.colorTimer.reset();
+        }
+        if (this.colorTimer.seconds()>2){
+            this.blinkinLedDriver.setPattern(this.breathRed);
+        }
         this.telescope.update();
-        return this.shoulder.update();
+        return this.claw.getClawSensor();
     }
 
     public int shoulderEncoder(){

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -45,20 +46,19 @@ public class Wrist {
         this.rightWrist.setPosition(target);
     }
 
-    public double update(){
+    public void update(){
         double duration = this.timer.milliseconds();
 
         if (Math.abs(this.currentPos-this.target)>.01 && duration < this.time) {
             double temp = this.currentPos + duration * this.moveIncrement;
             this.leftWrist.setPosition(temp);
             this.rightWrist.setPosition(temp);
-            return temp;
+            //return temp;
         } else {
             this.leftWrist.setPosition(this.target);
             this.rightWrist.setPosition(this.target);
             this.currentPos = this.target;
         }
-        return this.target;
     }
 
     public double getTarget() {

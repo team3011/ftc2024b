@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,7 +37,9 @@ public class AutoOppRight extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "lift"),
                 hardwareMap.get(Servo.class, "left"),
                 hardwareMap.get(Servo.class, "right"),
-                navx
+                navx,
+                hardwareMap.get(TouchSensor.class,"clawSensor"),
+                hardwareMap.get(RevBlinkinLedDriver.class, "servo")
         );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),

@@ -3,9 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.Shoulder;
@@ -29,6 +32,7 @@ public class ResetRobot extends LinearOpMode {
         Telescope telescope = new Telescope(
                 hardwareMap.get(DcMotorEx.class,"telescope"));
         RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
+        DcMotor ringLight = hardwareMap.get(DcMotor.class,"ring");
         RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
         blinkinLedDriver.setPattern(pattern);
         waitForStart();
@@ -49,6 +53,7 @@ public class ResetRobot extends LinearOpMode {
             lift.moveManual(right_y);
             telescope.moveManual(left_y*.2);
             wrist.moveWrist(RobotConstants.wrist_temp);
+            ringLight.setPower(RobotConstants.ringPower);
         }
 
     }

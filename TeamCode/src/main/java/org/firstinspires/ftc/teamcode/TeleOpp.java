@@ -33,7 +33,9 @@ public class TeleOpp extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "lift"),
                 hardwareMap.get(Servo.class, "left"),
                 hardwareMap.get(Servo.class, "right"),
-                navx
+                navx,
+                hardwareMap.get(TouchSensor.class,"clawSensor"),
+                hardwareMap.get(RevBlinkinLedDriver.class, "servo")
         );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),
@@ -41,9 +43,7 @@ public class TeleOpp extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "backLeft"),
                 hardwareMap.get(DcMotorEx.class, "backRight"),
                 navx);
-        RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
-        RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
-        blinkinLedDriver.setPattern(pattern);
+
 
         ElapsedTime timer = new ElapsedTime();
         // The gyro automatically starts calibrating. This takes a few seconds.
@@ -210,7 +210,7 @@ public class TeleOpp extends LinearOpMode {
             }
 
             //arm.manualMoveB(right_y);
-            double correction = arm.updateEverything();
+            boolean correction = arm.updateEverything();
 
             if (TeleOpp.driveEnabled) {
                 driveTrain.drive(left_x, left_y, 0);
@@ -221,7 +221,7 @@ public class TeleOpp extends LinearOpMode {
             telemetry.addData("reset shoulder status",arm.getResetStatus());
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);
-            telemetry.addData("tele correction",correction);
+            telemetry.addData("sensor data",correction);
             telemetry.addData("shoulder encoder",arm.shoulderEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
             telemetry.addData("lift encoder",arm.liftEncoder());

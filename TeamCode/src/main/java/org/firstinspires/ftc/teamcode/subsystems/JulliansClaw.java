@@ -1,16 +1,20 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 
 public class JulliansClaw {
     private Servo left;
     private Servo right;
+    private TouchSensor sensor;
 
-    public <T> JulliansClaw(Servo leftClaw, Servo rightClaw) {
+    public <T> JulliansClaw(Servo leftClaw, Servo rightClaw, TouchSensor s) {
         this.left = leftClaw;
         this.right = rightClaw;
+        this.sensor = s;
+
     }
 
     public void openBottom(){
@@ -34,5 +38,9 @@ public class JulliansClaw {
     }
     public void partialTop(){
         this.right.setPosition(RobotConstants.claw_partialTop);
+    }
+
+    public boolean getClawSensor(){
+        return this.sensor.isPressed();
     }
 }

@@ -64,4 +64,8 @@ public class Wrist {
     public double getTarget() {
         return this.target;
     }
+
+    public boolean getServo(double tolerance) {
+        return (Math.abs((this.rightWrist.getPosition() - this.currentPos)) < tolerance);
+    }
 }

@@ -6,18 +6,27 @@ import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSystemV2;
+import org.firstinspires.ftc.teamcode.subsystems.cameraMaybe;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+
+import java.util.List;
 
 @Config
 @TeleOp(name = "TeleOpp", group = "Robot")
 public class TeleOpp extends LinearOpMode {
     public static boolean driveEnabled = true;
+    List<Recognition> currentRecognitions;
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -43,6 +52,13 @@ public class TeleOpp extends LinearOpMode {
                 hardwareMap.get(DcMotorEx.class, "backLeft"),
                 hardwareMap.get(DcMotorEx.class, "backRight"),
                 navx);
+        cameraMaybe visionCam = new cameraMaybe(
+                hardwareMap.get(WebcamName.class, "Webcam 1")
+               // input,
+                //input2
+        );
+        visionCam.initTfod();
+        DcMotor ring = hardwareMap.get(DcMotor.class, "ring");
 
 
         ElapsedTime timer = new ElapsedTime();
@@ -87,14 +103,18 @@ public class TeleOpp extends LinearOpMode {
 
         //arm.tempWrist(.5);
 
+        boolean endGameStarted = false;
         arm.initialMove();
         while(opModeIsActive()){
+            //ring.setPower(1);
+            currentRecognitions = visionCam.returnRecogs();
             left_y = zeroAnalogInput(gamepad1.left_stick_y);
             right_y = zeroAnalogInput(gamepad1.right_stick_y);
             left_x = zeroAnalogInput(gamepad1.left_stick_x);
             right_x = zeroAnalogInput(gamepad1.right_stick_x);
             left_t = -zeroAnalogInput(gamepad1.left_trigger);
             right_t = zeroAnalogInput(gamepad1.right_trigger);
+
 
 
             if (gamepad1.a && !a_state) {
@@ -194,6 +214,7 @@ public class TeleOpp extends LinearOpMode {
 
             int stage = 0;
             if (left_t != 0) {
+                endGameStarted = true;
                 shoulderWasMoving = true;
                 stage = arm.prepForLift(left_t);
             } else if (shoulderWasMoving) {
@@ -209,19 +230,21 @@ public class TeleOpp extends LinearOpMode {
                 arm.lifting(0);
             }
 
+            //arm.manualMoveA(left_y);
             //arm.manualMoveB(right_y);
-            boolean correction = arm.updateEverything();
-
-            if (TeleOpp.driveEnabled) {
-                driveTrain.drive(left_x, left_y, 0);
+            if (!endGameStarted) {
+                boolean correction = arm.updateEverything();
             }
+            //if (TeleOpp.driveEnabled) {
+            //    driveTrain.drive(left_x, left_y, 0);
+            //}
 
             telemetry.addData("stage",stage);
             telemetry.addData("pickup level",pickupLevel);
             telemetry.addData("reset shoulder status",arm.getResetStatus());
             //telemetry.addData("right_y",right_y);
             //telemetry.addData("left_t",left_t);
-            telemetry.addData("sensor data",correction);
+            //telemetry.addData("sensor data",correction);
             telemetry.addData("shoulder encoder",arm.shoulderEncoder());
             telemetry.addData("telescope encoder",arm.telescopeEncoder());
             telemetry.addData("lift encoder",arm.liftEncoder());
@@ -230,7 +253,22 @@ public class TeleOpp extends LinearOpMode {
             //telemetry.addData("pitch",arm.getPitch());
             //telemetry.addData("x_distance",driveTrain.getXDistance());
             //telemetry.addData("y_distance",driveTrain.getYDistance());
+            telemetry.addData("# Objects Detected", currentRecognitions.size());
+
+            // Step through the list of recognitions and display info for each one.
+            for (Recognition recognition : currentRecognitions) {
+                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+
+                telemetry.addData(""," ");
+                telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+                telemetry.addData("- Position", "%.0f / %.0f", x, y);
+                telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+            }   // end for() loop
+
+
             telemetry.update();
+
         }
 
         driveTrain.drive(0,0,0);

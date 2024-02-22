@@ -33,6 +33,10 @@ public class JulliansClaw {
         this.right.setPosition(RobotConstants.claw_closeTop);
     }
 
+    public void closeTopHard(){
+        this.right.setPosition(0.3);
+    }
+
     public void partialBottom(){
         this.left.setPosition(RobotConstants.claw_partialBottom);
     }

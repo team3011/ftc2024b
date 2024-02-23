@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
@@ -101,6 +102,7 @@ public class autoTest extends LinearOpMode {
         }
         int cameraDetect = 0;
         double objLocation = 0;
+        ring.setPower(1);
         while (!opModeIsActive()) {
             currentRecognitions = visionCam.returnRecogs();
             if (currentRecognitions.size() != 0) {
@@ -156,39 +158,33 @@ public class autoTest extends LinearOpMode {
                     }
                     if (driveTrain.update(20, 20)) {
                         autoTargetSet = false;
-                        autoRunStage = 3;
+                        autoRunStage = 2;
                     }
                 }
             }
             //turn on camera to detect objects
             //move to location on board
-            else if (autoRunStage == 2) {
-                ring.setPower(0);
-                if (cameraDetect == 1) {
-                    if(!autoTargetSet) {
-
-                        autoTargetSet = true;
-                    }
-
-                } else if (cameraDetect == 3){
-                    if(!autoTargetSet) {
-
-                        autoTargetSet = true;
-                    }
-                }
-                if (driveTrain.update(20,20)) {
-                    autoTargetSet = false;
-                    autoRunStage = 3;
-                }
             //drop off bottom pixel
-            } else if (autoRunStage == 3) {
+            else if (autoRunStage == 2) {
                 arm.moveToStowSingle();
                 autoTargetSet = false;
-                autoRunStage = 4;
+                autoRunStage = 3;
             //move to drop of pixel on floor
-            } else if (autoRunStage == 4) {
+            }
+            else if (autoRunStage == 3) {
+                arm.moveToPickupClose();
+                if (cameraDetect != 3) {
+                    autoRunStage = 4;
+                }
+                else if (cameraDetect == 3) {
+                    if (arm.shoulderEncoder() > -60) {
+                        autoRunStage = 4;
+                    }
+                }
+
+            }
+            else if (autoRunStage == 4) {
                 if (!autoTargetSet) {
-                    arm.moveToPickupClose();
                     if (cameraDetect == 1) {
                         driveTrain.setTarget(-710, 225, 0, 0);
                         lastY = 225;

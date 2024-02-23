@@ -230,37 +230,19 @@ public class Arm {
     }
 
     public void moveToStowSingle() throws InterruptedException {
-        if (this.state == -1) {
-            this.claw.closeTop();
-            Thread.sleep(RobotConstants.claw_pickupPause);
-        }
-        if (this.state == 1) {
-            this.claw.partialBottom();
-            Thread.sleep(RobotConstants.claw_dropBottomPause);
-        }
-
-
+        this.claw.partialBottom();
+        Thread.sleep(RobotConstants.claw_dropBottomPause);
         this.shoulder.setPosition(RobotConstants.shoulder_stowPos);
         this.telescope.setPosition(RobotConstants.telescope_stowPos);
         this.wrist.setTarget(RobotConstants.wrist_stowPos,RobotConstants.wrist_stowTime);
-        //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
-        this.state = 0;
     }
     public void moveToStowDouble() throws InterruptedException {
-        if (this.state == -1) {
-            this.claw.partialTop();
-            this.claw.partialBottom();
-        }
-        if (this.state == 1) {
-            this.claw.partialBottom();
-            Thread.sleep(RobotConstants.claw_dropBottomPause);
-        }
-
-
+        this.claw.openTop();
+        this.claw.openBottom();
+        Thread.sleep(RobotConstants.claw_dropBottomPause);
         this.shoulder.setPosition(RobotConstants.shoulder_stowPos);
         this.telescope.setPosition(RobotConstants.telescope_stowPos);
-        this.wrist.setTarget(RobotConstants.wrist_stowPos,RobotConstants.wrist_stowTime);
-        //this.wrist.moveWrist(RobotConstants.wrist_stowPos);
+        this.wrist.setTarget(RobotConstants.wrist_stowPos,250);
         this.state = 0;
     }
 
@@ -288,28 +270,14 @@ public class Arm {
         }
     }
 
-    public void moveToPickupClose(int level){
-        if (this.state != 1) {
-            if (level == 0) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
-                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
-            } else if (level == 1) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack1);
-                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
-            } else if (level == 2) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack2);
-                this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
-            } else if (level == 3) {
-                this.shoulder.setPosition(RobotConstants.shoulder_pickupPos + RobotConstants.shoulder_stack3);
-                this.wrist.setTarget(RobotConstants.wrist_pickupPos + Arm.wristOffset, RobotConstants.wrist_pickupTime);
-            }
-            this.telescope.setPosition(RobotConstants.telescope_pickupPos);
-            this.state = -1;
-            this.claw.closeBottom();
-            this.claw.closeTopHard();
-            this.autoPickup = false;
-
-        }
+    public void moveToPickupClose(){
+        this.shoulder.setPosition(RobotConstants.shoulder_pickupPos);
+        this.wrist.setTarget(RobotConstants.wrist_pickupPos, RobotConstants.wrist_pickupTime);
+        this.telescope.setPosition(RobotConstants.telescope_pickupPos);
+        this.claw.closeBottom();
+        this.claw.closeTopHard();
+        this.autoPickup = false;
+        this.state = -1;
     }
 
     public void moveToDropOff(){
@@ -322,12 +290,14 @@ public class Arm {
     }
 
     public void moveToDropOffAuto(){
-        if (this.state != -1) {
-            this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
-            this.telescope.setPosition(-1000);
-            this.wrist.setTarget(RobotConstants.wrist_dropOffPos, RobotConstants.wrist_dropOffTime);
-            this.state = 1;
-        }
+        this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
+        this.telescope.setPosition(RobotConstants.telescope_dropOffHigh+1500);
+        this.wrist.setTarget(RobotConstants.wrist_dropOffPos, RobotConstants.wrist_dropOffTime);
+    }
+
+    public boolean getClawSensor() {
+        this.autoPickup = true;
+        return this.getClawSensor();
     }
 
     public boolean updateEverything() throws InterruptedException {

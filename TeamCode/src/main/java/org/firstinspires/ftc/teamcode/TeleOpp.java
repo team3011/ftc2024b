@@ -124,6 +124,7 @@ public class TeleOpp extends LinearOpMode {
             if (!gamepad1.a && a_state) {
                 a_state = false;
                 arm.moveToPickup(pickupLevel);
+                endGameStarted = false;
                 //code here will fire when button released
             }
             if (gamepad1.b && !b_state) {
@@ -133,6 +134,7 @@ public class TeleOpp extends LinearOpMode {
             if (!gamepad1.b && b_state) {
                 b_state = false;
                 arm.resetShoulder();
+                endGameStarted = false;
                 //code here will fire when button released
             }
             if (gamepad1.right_bumper && !rightB_state) {
@@ -141,6 +143,7 @@ public class TeleOpp extends LinearOpMode {
             }
             if (!gamepad1.right_bumper && rightB_state) {
                 rightB_state = false;
+                endGameStarted = false;
                 pickupLevel += 1;
                 if (pickupLevel > 3) {
                     pickupLevel = 0;
@@ -235,9 +238,10 @@ public class TeleOpp extends LinearOpMode {
             if (!endGameStarted) {
                 boolean correction = arm.updateEverything();
             }
-            //if (TeleOpp.driveEnabled) {
-            //    driveTrain.drive(left_x, left_y, 0);
-            //}
+
+            if (TeleOpp.driveEnabled) {
+                driveTrain.drive(left_x, left_y, 0);
+            }
 
             telemetry.addData("stage",stage);
             telemetry.addData("pickup level",pickupLevel);

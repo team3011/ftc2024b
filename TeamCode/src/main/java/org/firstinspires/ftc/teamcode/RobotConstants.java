@@ -5,20 +5,23 @@ import com.acmerobotics.dashboard.config.Config;
 @Config
 public class RobotConstants {
     public static double ringPower = 1;
+    public static float cameraConf = .4f;
+    public static int yForPickup = -1550;
+    public static int xForPickup = -1300;
     //shoulder constants
-        public static double shoulder_kP = 0.01;
+        public static double shoulder_kP = 0.017;
         public static double shoulder_kI = 0;
         public static double shoulder_kD = 0;
         public static double shoulder_kG = -0.05;
         public static int shoulder_maxVel = 20000;
-        public static int shoulder_maxAccel = 3000;
-        public static int shoulder_maxJerk = 1500;
+        public static int shoulder_maxAccel = 2500;
+        public static int shoulder_maxJerk = 1200;
         public static int shoulder_dropOffPos = -2100;
         public static final int shoulder_stowPos = 0;
         public static final int shoulder_pickupPos = 0;
         public static int shoulder_stack1 = -48;
-        public static int shoulder_stack2 = -64;
-        public static int shoulder_stack3 = -84;
+        public static int shoulder_stack2 = -67;
+        public static int shoulder_stack3 = -94;
 
 
     //telescope constants

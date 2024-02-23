@@ -9,10 +9,10 @@ public class RobotConstants {
     public static int yForPickup = -1550;
     public static int xForPickup = -1300;
     //shoulder constants
-        public static double shoulder_kP = 0.017;
+        public static double shoulder_kP = 0.015;
         public static double shoulder_kI = 0;
         public static double shoulder_kD = 0;
-        public static double shoulder_kG = -0.05;
+        public static double shoulder_kG = -0.25;
         public static int shoulder_maxVel = 20000;
         public static int shoulder_maxAccel = 2500;
         public static int shoulder_maxJerk = 1200;
@@ -21,7 +21,8 @@ public class RobotConstants {
         public static final int shoulder_pickupPos = 0;
         public static int shoulder_stack1 = -48;
         public static int shoulder_stack2 = -67;
-        public static int shoulder_stack3 = -94;
+        //public static int shoulder_stack3 = -94;
+        public static int shoulder_stack3 = -110;
 
 
     //telescope constants
@@ -41,7 +42,7 @@ public class RobotConstants {
         public static double claw_closeBottom = 0.42;
         public static double claw_openTop = 0.08;
         public static double claw_closeTop = 0.27;
-        public static double claw_partialTop = 0.23;
+        public static double claw_partialTop = 0.25;
         public static double claw_partialBottom = 0.3;
 
         public static final int claw_pickupPause = 250;
@@ -56,7 +57,7 @@ public class RobotConstants {
         public static final int wrist_stowTime = 1000;
         public static final int wrist_pickupTime = 1000;
         public static final int wrist_dropOffTime = 1000;
-        public static final double wrist_temp = 0.5;
+        public static double wrist_temp = 0.60;
 
     //lift constants
         public static final double lift_kP = 0.01;
@@ -87,9 +88,9 @@ public class RobotConstants {
         public static final double y_kI = 0;
         public static final double y_kD = 0.001;
         public static final double y_kG = 0;
-        public static final int y_maxVel = 5000;
-        public static final int y_maxAccel = 500;
-        public static final int y_maxJerk = 500;
+        public static int y_maxVel = 7000;
+        public static int y_maxAccel = 700;
+        public static int y_maxJerk = 700;
         public static final int yTarget = 0;
         public static final int xTarget = 500;
         public static final double drive_fudge = 1;

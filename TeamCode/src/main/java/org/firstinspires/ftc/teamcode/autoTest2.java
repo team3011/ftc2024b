@@ -45,7 +45,8 @@ public class autoTest2 extends LinearOpMode {
                 hardwareMap.get(Servo.class, "right"),
                 navx,
                 hardwareMap.get(TouchSensor.class, "clawSensor"),
-                hardwareMap.get(RevBlinkinLedDriver.class, "servo")
+                hardwareMap.get(RevBlinkinLedDriver.class, "servo"),
+                true
         );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),

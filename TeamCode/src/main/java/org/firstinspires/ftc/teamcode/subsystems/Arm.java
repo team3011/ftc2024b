@@ -36,11 +36,11 @@ public class Arm {
     private boolean autoPickup = false;
 
     private RevBlinkinLedDriver blinkinLedDriver;
-    private RevBlinkinLedDriver.BlinkinPattern breathRed = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
+    private RevBlinkinLedDriver.BlinkinPattern mainColor;
     private RevBlinkinLedDriver.BlinkinPattern violet = RevBlinkinLedDriver.BlinkinPattern.VIOLET;
     private ElapsedTime colorTimer = new ElapsedTime();
 
-    public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw, NavxMicroNavigationSensor n, TouchSensor wt, RevBlinkinLedDriver rbld){
+    public Arm(DcMotorEx sm, TouchSensor st, DcMotorEx tm, Servo lc, Servo rc, DcMotorEx lm, Servo lw, Servo rw, NavxMicroNavigationSensor n, TouchSensor wt, RevBlinkinLedDriver rbld, boolean isRed){
         this.shoulder = new Shoulder(sm, st);
         this.telescope = new Telescope(tm);
         this.claw = new JulliansClaw(lc, rc, wt);
@@ -49,7 +49,12 @@ public class Arm {
         this.navx = n;
         this.gyro = (IntegratingGyroscope)this.navx;
         this.blinkinLedDriver = rbld;
-        this.blinkinLedDriver.setPattern(breathRed);
+        if (isRed){
+            this.mainColor = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
+        }else{
+            this.mainColor = RevBlinkinLedDriver.BlinkinPattern.BREATH_BLUE;
+        }
+        this.blinkinLedDriver.setPattern(this.mainColor);
     }
 
     public void manualMoveA(double input){
@@ -291,13 +296,13 @@ public class Arm {
 
     public void moveToDropOffAuto(){
         this.shoulder.setPosition(RobotConstants.shoulder_dropOffPos);
-        this.telescope.setPosition(RobotConstants.telescope_dropOffHigh+1500);
+        this.telescope.setPosition(-1000);
         this.wrist.setTarget(RobotConstants.wrist_dropOffPos, RobotConstants.wrist_dropOffTime);
     }
 
     public boolean getClawSensor() {
         this.autoPickup = true;
-        return this.getClawSensor();
+        return this.claw.getClawSensor();
     }
 
     public boolean updateEverything() throws InterruptedException {
@@ -310,7 +315,7 @@ public class Arm {
             this.colorTimer.reset();
         }
         if (this.colorTimer.seconds()>2){
-            this.blinkinLedDriver.setPattern(this.breathRed);
+            this.blinkinLedDriver.setPattern(this.mainColor);
         }
         this.telescope.update();
         return this.claw.getClawSensor();

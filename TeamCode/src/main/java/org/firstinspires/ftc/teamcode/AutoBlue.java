@@ -33,8 +33,8 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "AutoTest")
-public class autoTest extends LinearOpMode {
+@Autonomous(name = "AutoBlue")
+public class AutoBlue extends LinearOpMode {
     List<Recognition> currentRecognitions;
 
     // @Override
@@ -45,7 +45,7 @@ public class autoTest extends LinearOpMode {
         NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
 
         RevBlinkinLedDriver blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "servo");
-        RevBlinkinLedDriver.BlinkinPattern breathRed = RevBlinkinLedDriver.BlinkinPattern.BREATH_RED;
+        RevBlinkinLedDriver.BlinkinPattern breathRed = RevBlinkinLedDriver.BlinkinPattern.BREATH_BLUE;
         RevBlinkinLedDriver.BlinkinPattern violet = RevBlinkinLedDriver.BlinkinPattern.VIOLET;
 
         Arm arm = new Arm(
@@ -60,7 +60,7 @@ public class autoTest extends LinearOpMode {
                 navx,
                 hardwareMap.get(TouchSensor.class, "clawSensor"),
                 hardwareMap.get(RevBlinkinLedDriver.class, "servo"),
-                true
+                false
         );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),
@@ -97,25 +97,6 @@ public class autoTest extends LinearOpMode {
         timer.reset();
         while (timer.seconds() < 3) {
             arm.updateEverything();
-
-        }
-        int cameraDetect = 0;
-        double objLocation = 0;
-        while (!opModeIsActive()) {
-            currentRecognitions = visionCam.returnRecogs();
-            if (currentRecognitions.size() != 0) {
-                Recognition recognition = currentRecognitions.get(0);
-                objLocation = recognition.getLeft();
-                if (objLocation < middleLeft) {
-                    objLocation = 3;
-                }
-                else if (objLocation < rightLeft) {
-                    objLocation = 2;
-                }
-                 else {
-                     objLocation = 3;
-                }
-            }
         }
 
         waitForStart();
@@ -125,8 +106,10 @@ public class autoTest extends LinearOpMode {
         boolean lifting = false;
         boolean autoRun = false;
         int autoRunStage = 0;
+        int cameraDetect = 0;
         int step = 0;
         int half = 0;
+        float objSize = 0;
         boolean autoTargetSet = false;
         boolean stop = false;
         boolean armUpdateOverride = false;
@@ -139,40 +122,60 @@ public class autoTest extends LinearOpMode {
             //move to the board, put arm to dropoff
             if (autoRunStage == 0) {
                 if (!autoTargetSet) {
+                    driveTrain.setTarget(910, 1030, 0, 0);
                     RobotConstants.shoulder_kP = .01;
                     arm.moveToDropOffAuto();
                     ring.setPower(1);
-                    if (cameraDetect == 1) {
-                        driveTrain.setTarget(-850, 1010, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (cameraDetect == 2) {
-                        driveTrain.setTarget(-525, 1010, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (cameraDetect == 3) {
-                        driveTrain.setTarget(-695, 1015, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (driveTrain.update(20, 20)) {
-                        autoTargetSet = false;
+                    autoTargetSet = true;
+                }
+                if(driveTrain.update(20,20)){
+                    autoRunStage = 1;
+                    autoTargetSet = false;
+                }
+                //turn on camera to detect objects
+            } else if (autoRunStage == 1) {
+                if (cameraDetect == 0) {
+                    currentRecognitions = visionCam.returnRecogs();
+                }
+                //we have found an object
+                if (currentRecognitions.size() != 0) {
+                    Recognition recognition = currentRecognitions.get(0);
+                    objSize = recognition.getWidth() * recognition.getHeight();
+                    telemetry.addData("counts", currentRecognitions.size());
+                    telemetry.addData("size", objSize);
+                    telemetry.addData("width", recognition.getWidth());
+                    telemetry.addData("height", recognition.getHeight());
+                    //left
+                    if (objSize < (70 * 70)) {
+                        cameraDetect = 3;
+                        autoRunStage = 2;
+                        //middle
+                    } else if (objSize >= (70 * 70) && objSize <= (90 * 90)) {
+                        cameraDetect = 2;
                         autoRunStage = 3;
+                        //right
+                    } else {
+                        cameraDetect = 1;
+                        autoRunStage = 2;
                     }
                 }
-            }
-            //turn on camera to detect objects
-            //move to location on board
-            else if (autoRunStage == 2) {
+                //move to location on board
+            } else if (autoRunStage == 2) {
                 ring.setPower(0);
                 if (cameraDetect == 1) {
                     if(!autoTargetSet) {
-
+                        driveTrain.setTarget(450, 1030, 0, 0);
                         autoTargetSet = true;
                     }
 
+                } else if (cameraDetect == 2){
+                    if(!autoTargetSet) {
+                        driveTrain.setTarget(690, 1030, 0, 0);
+                        autoTargetSet = true;
+                    }
                 } else if (cameraDetect == 3){
                     if(!autoTargetSet) {
-
+                        driveTrain.setTarget(880, 1030, 0, 0);
                         autoTargetSet = true;
                     }
                 }
@@ -180,24 +183,24 @@ public class autoTest extends LinearOpMode {
                     autoTargetSet = false;
                     autoRunStage = 3;
                 }
-            //drop off bottom pixel
+                //drop off bottom pixel
             } else if (autoRunStage == 3) {
                 arm.moveToStowSingle();
                 autoTargetSet = false;
                 autoRunStage = 4;
-            //move to drop of pixel on floor
+                //move to drop of pixel on floor
             } else if (autoRunStage == 4) {
                 if (!autoTargetSet) {
                     arm.moveToPickupClose();
                     if (cameraDetect == 1) {
-                        driveTrain.setTarget(-710, 225, 0, 0);
-                        lastY = 225;
+                        driveTrain.setTarget(660, 775, 0, 0);
+                        lastY = 775;
                     } else if (cameraDetect == 2) {
-                        driveTrain.setTarget(-975, 620, 0, 0);
+                        driveTrain.setTarget(960, 580, 0, 0);
                         lastY = 580;
                     } else {
-                        driveTrain.setTarget(-710, 775, 0, 0);
-                        lastY = 775;
+                        driveTrain.setTarget(660, 225, 0, 0);
+                        lastY = 225;
                     }
                     autoTargetSet = true;
                 } else if (driveTrain.update(20, 20) && arm.shoulderEncoder()>-60) {
@@ -205,19 +208,19 @@ public class autoTest extends LinearOpMode {
                     arm.moveToStowDouble();
                     autoTargetSet = false;
                 }
-            //move to lane 3
+                //move to lane 3
             } else if (autoRunStage == 5) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(-1330, lastY+100, 0, 0);
+                    driveTrain.setTarget(1330, lastY+100, 0, 0);
                     autoTargetSet = true;
                 } else if (driveTrain.update(20, 20)) {
                     autoRunStage = 6;
                     autoTargetSet = false;
                 }
-            //move to stack
+                //move to stack
             } else if (autoRunStage == 6) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(-1300, -1540, 0, 0);
+                    driveTrain.setTarget(1295, -1520, 0, 0);
                     arm.moveToPickup(3);
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
@@ -234,20 +237,20 @@ public class autoTest extends LinearOpMode {
                         }
                     }
                 }
-            //return back to top of lane 3
+                //return back to top of lane 3
             } else if (autoRunStage == 7) {
                 armUpdateOverride = false;
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(-1320, 775, 0, 0);
+                    driveTrain.setTarget(1320, 775, 0, 0);
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
                     autoRunStage = 8;
                     autoTargetSet = false;
                 }
-            //move to backboard
+                //move to backboard
             } else if (autoRunStage == 8) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(-690, 1000, 0, 0);
+                    driveTrain.setTarget(690, 1000, 0, 0);
                     arm.moveToDropOff();
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
@@ -288,5 +291,6 @@ public class autoTest extends LinearOpMode {
         }
     }
 }
+
 
 

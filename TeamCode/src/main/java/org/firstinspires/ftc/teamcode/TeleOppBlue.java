@@ -23,8 +23,8 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import java.util.List;
 
 @Config
-@TeleOp(name = "TeleOpp", group = "Robot")
-public class TeleOpp extends LinearOpMode {
+@TeleOp(name = "TeleOppBlue", group = "Robot")
+public class TeleOppBlue extends LinearOpMode {
     public static boolean driveEnabled = true;
     List<Recognition> currentRecognitions;
     @Override
@@ -45,7 +45,7 @@ public class TeleOpp extends LinearOpMode {
                 navx,
                 hardwareMap.get(TouchSensor.class,"clawSensor"),
                 hardwareMap.get(RevBlinkinLedDriver.class, "servo"),
-                true
+                false
         );
         DriveSystemV2 driveTrain = new DriveSystemV2(
                 hardwareMap.get(DcMotorEx.class, "frontLeft"),
@@ -232,7 +232,7 @@ public class TeleOpp extends LinearOpMode {
             }
 
             if (TeleOpp.driveEnabled) {
-                driveTrain.drive(left_x, left_y, 0);
+                driveTrain.drive(-left_x, -left_y, 0);
             }
 
             telemetry.addData("stage",stage);
@@ -267,3 +267,4 @@ public class TeleOpp extends LinearOpMode {
         return input;
     }
 }
+

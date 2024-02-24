@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
@@ -98,26 +97,6 @@ public class autoTest extends LinearOpMode {
         timer.reset();
         while (timer.seconds() < 3) {
             arm.updateEverything();
-
-        }
-        int cameraDetect = 0;
-        double objLocation = 0;
-        ring.setPower(1);
-        while (!opModeIsActive()) {
-            currentRecognitions = visionCam.returnRecogs();
-            if (currentRecognitions.size() != 0) {
-                Recognition recognition = currentRecognitions.get(0);
-                objLocation = recognition.getLeft();
-                if (objLocation < middleLeft) {
-                    objLocation = 3;
-                }
-                else if (objLocation < rightLeft) {
-                    objLocation = 2;
-                }
-                 else {
-                     objLocation = 3;
-                }
-            }
         }
 
         waitForStart();
@@ -127,76 +106,99 @@ public class autoTest extends LinearOpMode {
         boolean lifting = false;
         boolean autoRun = false;
         int autoRunStage = 0;
+        int cameraDetect = 0;
         int step = 0;
         int half = 0;
+        float objSize = 0;
         boolean autoTargetSet = false;
         boolean stop = false;
         boolean armUpdateOverride = false;
         int lastY = 0;
 
 
-        //arm.tempWrist(.5);
-
+        ElapsedTime resetTimer = new ElapsedTime();
+        boolean startTimer = false;
         while (opModeIsActive()) {
+            if (!startTimer) {
+                resetTimer.reset();
+                startTimer = true;
+            }
             //move to the board, put arm to dropoff
             if (autoRunStage == 0) {
                 if (!autoTargetSet) {
+                    driveTrain.setTarget(-690, 1005, 0, 0);
                     RobotConstants.shoulder_kP = .01;
                     arm.moveToDropOffAuto();
                     ring.setPower(1);
-                    if (cameraDetect == 1) {
-                        driveTrain.setTarget(-850, 1010, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (cameraDetect == 2) {
-                        driveTrain.setTarget(-525, 1010, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (cameraDetect == 3) {
-                        driveTrain.setTarget(-695, 1015, 0, 0);
-                        autoTargetSet = true;
-                    }
-                    if (driveTrain.update(20, 20)) {
-                        autoTargetSet = false;
+                    autoTargetSet = true;
+                }
+                if(driveTrain.update(20,20)){
+                    autoRunStage = 1;
+                    autoTargetSet = false;
+                }
+            //turn on camera to detect objects
+            } else if (autoRunStage == 1) {
+                if (cameraDetect == 0) {
+                    currentRecognitions = visionCam.returnRecogs();
+                }
+                //we have found an object
+                if (currentRecognitions.size() != 0) {
+                    Recognition recognition = currentRecognitions.get(0);
+                    objSize = recognition.getWidth() * recognition.getHeight();
+                    //left
+                    if (objSize < (70 * 70)) {
+                        cameraDetect = 1;
+                        autoRunStage = 2;
+                    //middle
+                    } else if (objSize >= (70 * 70) && objSize <= (90 * 90)) {
+                        cameraDetect = 2;
+                        autoRunStage = 3;
+                    //right
+                    } else {
+                        cameraDetect = 3;
                         autoRunStage = 2;
                     }
                 }
-            }
-            //turn on camera to detect objects
             //move to location on board
-            //drop off bottom pixel
-            else if (autoRunStage == 2) {
-                arm.moveToStowSingle();
-                autoTargetSet = false;
-                autoRunStage = 3;
-            //move to drop of pixel on floor
-            }
-            else if (autoRunStage == 3) {
-                arm.moveToPickupClose();
-                if (cameraDetect != 3) {
-                    autoRunStage = 4;
-                }
-                else if (cameraDetect == 3) {
-                    if (arm.shoulderEncoder() > -60) {
-                        autoRunStage = 4;
+            } else if (autoRunStage == 2) {
+                ring.setPower(0);
+                if (cameraDetect == 1) {
+                    if(!autoTargetSet) {
+                        driveTrain.setTarget(-850, 1005, 0, 0);
+                        autoTargetSet = true;
+                    }
+
+                } else if (cameraDetect == 3){
+                    if(!autoTargetSet) {
+                        driveTrain.setTarget(-525, 1005, 0, 0);
+                        autoTargetSet = true;
                     }
                 }
-
-            }
-            else if (autoRunStage == 4) {
+                if (driveTrain.update(20,20)) {
+                    autoTargetSet = false;
+                    autoRunStage = 3;
+                }
+            //drop off bottom pixel
+            } else if (autoRunStage == 3) {
+                arm.moveToStowSingle();
+                autoTargetSet = false;
+                autoRunStage = 4;
+            //move to drop of pixel on floor
+            } else if (autoRunStage == 4) {
                 if (!autoTargetSet) {
+                    arm.moveToPickupClose();
                     if (cameraDetect == 1) {
                         driveTrain.setTarget(-710, 225, 0, 0);
                         lastY = 225;
                     } else if (cameraDetect == 2) {
-                        driveTrain.setTarget(-975, 620, 0, 0);
+                        driveTrain.setTarget(-970, 600, 0, 0);
                         lastY = 580;
                     } else {
                         driveTrain.setTarget(-710, 775, 0, 0);
                         lastY = 775;
                     }
                     autoTargetSet = true;
-                } else if (driveTrain.update(20, 20) && arm.shoulderEncoder()>-60) {
+                } else if (driveTrain.update(50, 50) && arm.shoulderEncoder()>-60) {
                     autoRunStage = 5;
                     arm.moveToStowDouble();
                     autoTargetSet = false;
@@ -213,7 +215,7 @@ public class autoTest extends LinearOpMode {
             //move to stack
             } else if (autoRunStage == 6) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(-1300, -1540, 0, 0);
+                    driveTrain.setTarget(-1310, -1530, 0, 0);
                     arm.moveToPickup(3);
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
@@ -244,13 +246,19 @@ public class autoTest extends LinearOpMode {
             } else if (autoRunStage == 8) {
                 if (!autoTargetSet) {
                     driveTrain.setTarget(-690, 1000, 0, 0);
-                    arm.moveToDropOff();
+                    arm.moveToDropOffAuto();
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
                     autoRunStage = 9;
                     autoTargetSet = false;
                     arm.moveToStow();
+                    driveTrain.drive(0, 0, 0);
                 }
+            }
+
+            if (autoRunStage < 8 && resetTimer.seconds()>25){
+                arm.moveToStow();
+                driveTrain.drive(0, 0, 0);
             }
 
             telemetry.addData("x distance", driveTrain.getXDistance());

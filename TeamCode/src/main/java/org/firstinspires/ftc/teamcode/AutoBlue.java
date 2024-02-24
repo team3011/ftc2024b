@@ -116,13 +116,17 @@ public class AutoBlue extends LinearOpMode {
         int lastY = 0;
 
 
-        //arm.tempWrist(.5);
-
+        ElapsedTime resetTimer = new ElapsedTime();
+        boolean startTimer = false;
         while (opModeIsActive()) {
+            if (!startTimer) {
+                resetTimer.reset();
+                startTimer = true;
+            }
             //move to the board, put arm to dropoff
             if (autoRunStage == 0) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(910, 1030, 0, 0);
+                    driveTrain.setTarget(950, 1010, 0, 0);
                     RobotConstants.shoulder_kP = .01;
                     arm.moveToDropOffAuto();
                     ring.setPower(1);
@@ -164,22 +168,22 @@ public class AutoBlue extends LinearOpMode {
                 ring.setPower(0);
                 if (cameraDetect == 1) {
                     if(!autoTargetSet) {
-                        driveTrain.setTarget(450, 1030, 0, 0);
+                        driveTrain.setTarget(450, 1005, 0, 0);
                         autoTargetSet = true;
                     }
 
                 } else if (cameraDetect == 2){
                     if(!autoTargetSet) {
-                        driveTrain.setTarget(690, 1030, 0, 0);
+                        driveTrain.setTarget(690, 1005, 0, 0);
                         autoTargetSet = true;
                     }
                 } else if (cameraDetect == 3){
                     if(!autoTargetSet) {
-                        driveTrain.setTarget(880, 1030, 0, 0);
+                        driveTrain.setTarget(880, 1005, 0, 0);
                         autoTargetSet = true;
                     }
                 }
-                if (driveTrain.update(20,20)) {
+                if (driveTrain.update(50,50)) {
                     autoTargetSet = false;
                     autoRunStage = 3;
                 }
@@ -193,17 +197,17 @@ public class AutoBlue extends LinearOpMode {
                 if (!autoTargetSet) {
                     arm.moveToPickupClose();
                     if (cameraDetect == 1) {
-                        driveTrain.setTarget(660, 775, 0, 0);
+                        driveTrain.setTarget(710, 775, 0, 0);
                         lastY = 775;
                     } else if (cameraDetect == 2) {
-                        driveTrain.setTarget(960, 580, 0, 0);
+                        driveTrain.setTarget(970, 600, 0, 0);
                         lastY = 580;
                     } else {
-                        driveTrain.setTarget(660, 225, 0, 0);
+                        driveTrain.setTarget(710, 225, 0, 0);
                         lastY = 225;
                     }
                     autoTargetSet = true;
-                } else if (driveTrain.update(20, 20) && arm.shoulderEncoder()>-60) {
+                } else if (driveTrain.update(50, 50) && arm.shoulderEncoder()>-60) {
                     autoRunStage = 5;
                     arm.moveToStowDouble();
                     autoTargetSet = false;
@@ -220,7 +224,7 @@ public class AutoBlue extends LinearOpMode {
                 //move to stack
             } else if (autoRunStage == 6) {
                 if (!autoTargetSet) {
-                    driveTrain.setTarget(1295, -1520, 0, 0);
+                    driveTrain.setTarget(1285, -1520, 0, 0);
                     arm.moveToPickup(3);
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
@@ -251,13 +255,19 @@ public class AutoBlue extends LinearOpMode {
             } else if (autoRunStage == 8) {
                 if (!autoTargetSet) {
                     driveTrain.setTarget(690, 1000, 0, 0);
-                    arm.moveToDropOff();
+                    arm.moveToDropOffAuto();
                     autoTargetSet = true;
                 } else if (driveTrain.update(20,20)) {
                     autoRunStage = 9;
                     autoTargetSet = false;
                     arm.moveToStow();
+                    driveTrain.drive(0, 0, 0);
                 }
+            }
+
+            if (autoRunStage < 8 && resetTimer.seconds()>25){
+                arm.moveToStow();
+                driveTrain.drive(0, 0, 0);
             }
 
             telemetry.addData("x distance", driveTrain.getXDistance());

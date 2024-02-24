@@ -42,7 +42,7 @@ public class RobotConstants {
         public static double claw_closeBottom = 0.42;
         public static double claw_openTop = 0.08;
         public static double claw_closeTop = 0.27;
-        public static double claw_partialTop = 0.25;
+        public static double claw_partialTop = 0.15;
         public static double claw_partialBottom = 0.3;
 
         public static final int claw_pickupPause = 250;

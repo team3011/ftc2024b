@@ -55,6 +55,7 @@ public class TeleOpp extends LinearOpMode {
                 navx);
 
         ElapsedTime timer = new ElapsedTime();
+        Servo airplane = hardwareMap.get(Servo.class, "airplane");
         // The gyro automatically starts calibrating. This takes a few seconds.
         telemetry.log().add("Gyro Calibrating. Do Not Move!");
 
@@ -81,6 +82,7 @@ public class TeleOpp extends LinearOpMode {
         boolean b_state = false;
         boolean x_state = false;
         boolean y_state = false;
+        boolean leftB_state = false;
         boolean rightB_state = false;
         boolean dpadUp_state = false;
         boolean dpadDown_state = false;
@@ -96,10 +98,13 @@ public class TeleOpp extends LinearOpMode {
 
         //arm.tempWrist(.5);
 
+        //airplane.setPosition(.5);
+
         boolean endGameStarted = false;
         //arm.initialMove();
         arm.moveToStow();
         while(opModeIsActive()){
+            //airplane.setPosition(1);
             left_y = zeroAnalogInput(gamepad1.left_stick_y);
             right_y = zeroAnalogInput(gamepad1.right_stick_y);
             left_x = zeroAnalogInput(gamepad1.left_stick_x);
@@ -118,6 +123,14 @@ public class TeleOpp extends LinearOpMode {
                 arm.moveToPickup(pickupLevel);
                 endGameStarted = false;
                 //code here will fire when button released
+            }
+            if (gamepad1.left_bumper && !leftB_state) {
+                leftB_state = true;
+                //code here will fire when button pressed
+            }
+            if (!gamepad1.left_bumper && leftB_state) {
+                leftB_state = false;
+                ///code here will fire when button released
             }
             if (gamepad1.b && !b_state) {
                 b_state = true;
